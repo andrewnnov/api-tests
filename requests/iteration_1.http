@@ -1,0 +1,181 @@
+
+//Get auth token
+//Admin token authorization: Basic YWRtaW46YWRtaW4=
+
+POST http://localhost:4111/api/v1/auth/login
+Content-Type: application/json
+
+{
+"username": "admin",
+"password": "admin"
+}
+
+### Positive test: Admin can create user with correct data
+POST http://localhost:4111/api/v1/admin/users
+Authorization: Basic YWRtaW46YWRtaW4=
+Content-Type: application/json
+
+{
+"username": "kate003",
+"password": "Kate003!",
+"role": "USER"
+}
+
+
+### Negative test: Admin can not create user with blank username
+POST http://localhost:4111/api/v1/admin/users
+Authorization: Basic YWRtaW46YWRtaW4=
+Content-Type: application/json
+
+{
+"username": "",
+"password": "{{$random.uuid}}",
+"role": "USER"
+}
+
+### Negative test: Admin can not create user with 2 characters
+POST http://localhost:4111/api/v1/admin/users
+Authorization: Basic YWRtaW46YWRtaW4=
+Content-Type: application/json
+
+{
+"username": "ab",
+"password": "{{$random.uuid}}",
+"role": "USER"
+}
+
+### Negative test: Admin can not create user with 16 characters
+POST http://localhost:4111/api/v1/admin/users
+Authorization: Basic YWRtaW46YWRtaW4=
+Content-Type: application/json
+
+{
+"username": "abdrldjkresjkfkf",
+"password": "{{$random.uuid}}",
+"role": "USER"
+}
+
+### Negative test: Admin can not create user with username contains $ % () #
+POST http://localhost:4111/api/v1/admin/users
+Authorization: Basic YWRtaW46YWRtaW4=
+Content-Type: application/json
+
+{
+"username": "kate$$",
+"password": "{{$random.uuid}}",
+"role": "USER"
+}
+
+### Negative test: Admin can not create user with blanc password
+POST http://localhost:4111/api/v1/admin/users
+Authorization: Basic YWRtaW46YWRtaW4=
+Content-Type: application/json
+
+{
+"username": "{{$random.uuid}}",
+"password": "",
+"role": "USER"
+}
+
+### Negative test: Admin can not create user with password less than 8 characters
+POST http://localhost:4111/api/v1/admin/users
+Authorization: Basic YWRtaW46YWRtaW4=
+Content-Type: application/json
+
+{
+"username": "{{$random.uuid}}",
+"password": "1234567",
+"role": "USER"
+}
+
+### Negative test: Admin can not create user with password without 1 digits
+POST http://localhost:4111/api/v1/admin/users
+Authorization: Basic YWRtaW46YWRtaW4=
+Content-Type: application/json
+
+{
+"username": "{{$random.uuid}}",
+"password": "password",
+"role": "USER"
+}
+
+### Negative test: Admin can not create user with password without one lowercase
+POST http://localhost:4111/api/v1/admin/users
+Authorization: Basic YWRtaW46YWRtaW4=
+Content-Type: application/json
+
+{
+"username": "{{$random.uuid}}",
+"password": "password",
+"role": "USER"
+}
+
+### Negative test: Admin can not create user with password without one uppercase
+POST http://localhost:4111/api/v1/admin/users
+Authorization: Basic YWRtaW46YWRtaW4=
+Content-Type: application/json
+
+{
+"username": "{{$random.uuid}}",
+"password": "password",
+"role": "USER"
+}
+
+### Negative test: Admin can not create user with password without one special character
+POST http://localhost:4111/api/v1/admin/users
+Authorization: Basic YWRtaW46YWRtaW4=
+Content-Type: application/json
+
+{
+"username": "{{$random.uuid}}",
+"password": "password",
+"role": "USER"
+}
+
+### Negative test: Admin can not create user with password with spaces
+POST http://localhost:4111/api/v1/admin/users
+Authorization: Basic YWRtaW46YWRtaW4=
+Content-Type: application/json
+
+{
+"username": "{{$random.uuid}}",
+"password": "Pas sword1!",
+"role": "USER"
+}
+
+### Negative test: Admin can not create user with role not from list "ADMIN" and "USER"
+POST http://localhost:4111/api/v1/admin/users
+Authorization: Basic YWRtaW46YWRtaW4=
+Content-Type: application/json
+
+{
+"username": "{{$random.uuid}}",
+"password": "{{$random.uuid}}",
+"role": "EDITOR"
+}
+
+
+
+
+
+### Negative test: Create user that already exist by admin
+POST http://localhost:4111/api/v1/admin/users
+Authorization: Basic YWRtaW46YWRtaW4=
+Content-Type: application/json
+
+{
+"username": "kate002",
+"password": "Kate001!",
+"role": "USER"
+}
+
+### Positive test: Authorized user can create account
+POST http://localhost:4111/api/v1/accounts
+Content-Type: application/json
+Authorization: Basic a2F0ZTAwMjpLYXRlMDAxIQ==
+
+
+### Positive test: Check account wad created
+GET http://localhost:4111/api/v1/customer/accounts
+Content-Type: application/json
+Authorization: Basic a2F0ZTAwMjpLYXRlMDAxIQ==
