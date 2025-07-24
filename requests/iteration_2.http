@@ -1,0 +1,138 @@
+
+//Get auth token
+//User token authorization: Basic YWRtaW46YWRtaW4=
+
+POST http://localhost:4111/api/v1/auth/login
+Content-Type: application/json
+
+{
+"username": "kate004",
+"password": "Kate004!"
+}
+
+### Positive test: Authorized user can create account
+POST http://localhost:4111/api/v1/accounts
+Content-Type: application/json
+Authorization: Basic a2F0ZTAwNDpLYXRlMDA0IQ==
+
+
+### Positive test: Authorize user makes a deposit into his account
+POST http://localhost:4111/api/v1/accounts/deposit
+Authorization: Basic a2F0ZTAwNDpLYXRlMDA0IQ==
+Content-Type: application/json
+
+{
+  "id": 1,
+  "balance": 100
+}
+
+### Negative test: Authorize user can not make a deposit into someone else account
+POST http://localhost:4111/api/v1/accounts/deposit
+Authorization: Basic a2F0ZTAwNDpLYXRlMDA0IQ==
+Content-Type: application/json
+
+{
+  "id": 3,
+  "balance": 33
+}
+
+
+### Negative test: Authorize user can not do a deposit with not existing account (or account of other user)
+POST http://localhost:4111/api/v1/accounts/deposit
+Authorization: Basic a2F0ZTAwNDpLYXRlMDA0IQ==
+Content-Type: application/json
+
+{
+  "id": 40,
+  "balance": 25
+}
+
+### Negative test: Authorize user can not do a deposit with negative amount
+POST http://localhost:4111/api/v1/accounts/deposit
+Authorization: Basic a2F0ZTAwNDpLYXRlMDA0IQ==
+Content-Type: application/json
+
+{
+  "id": 1,
+  "balance": 25
+}
+
+### Negative test: Authorize user can not do a deposit with zero amount
+POST http://localhost:4111/api/v1/accounts/deposit
+Authorization: Basic a2F0ZTAwNDpLYXRlMDA0IQ==
+Content-Type: application/json
+
+{
+  "id": 1,
+  "balance": 0
+}
+
+### Positive test: Check account was created
+GET http://localhost:4111/api/v1/customer/accounts
+Content-Type: application/json
+Authorization: Basic a2F0ZTAwNDpLYXRlMDA0IQ==
+
+### Positive test: Authorize user makes a transfer money from one account to another account
+POST http://localhost:4111/api/v1/accounts/transfer
+Authorization: Basic a2F0ZTAwNDpLYXRlMDA0IQ==
+Content-Type: application/json
+
+{
+  "senderAccountId": 1,
+  "receiverAccountId": 2,
+  "amount": 254
+}
+
+
+### Negative test: Authorize user can not transfer money more than he has
+POST http://localhost:4111/api/v1/accounts/transfer
+Authorization: Basic a2F0ZTAwNDpLYXRlMDA0IQ==
+Content-Type: application/json
+
+{
+  "senderAccountId": 1,
+  "receiverAccountId": 2,
+  "amount": 200
+}
+
+### Negative test: Authorize user can not transfer money with negative amount
+POST http://localhost:4111/api/v1/accounts/transfer
+Authorization: Basic a2F0ZTAwNDpLYXRlMDA0IQ==
+Content-Type: application/json
+
+{
+  "senderAccountId": 1,
+  "receiverAccountId": 2,
+  "amount": -20
+}
+
+### Negative test: Authorize user can not transfer money to not existing account
+POST http://localhost:4111/api/v1/accounts/transfer
+Authorization: Basic a2F0ZTAwNDpLYXRlMDA0IQ==
+Content-Type: application/json
+
+{
+  "senderAccountId": 1,
+  "receiverAccountId": 40,
+  "amount": 20
+}
+
+### Negative test: Authorize user can not transfer money from someone else's account
+POST http://localhost:4111/api/v1/accounts/transfer
+Authorization: Basic a2F0ZTAwNDpLYXRlMDA0IQ==
+Content-Type: application/json
+
+{
+  "senderAccountId": 3,
+  "receiverAccountId": 1,
+  "amount": 20
+}
+
+### Positive test: Authorize user makes update name
+PUT http://localhost:4111/api/v1/customer/profile
+Authorization: Basic a2F0ZTAwNDpLYXRlMDA0IQ==
+Content-Type: application/json
+
+{
+  "name": "Alice2"
+}
