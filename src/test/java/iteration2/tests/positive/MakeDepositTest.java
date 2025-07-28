@@ -7,6 +7,7 @@ import iteration2.steps.AccountStep;
 import iteration2.steps.AuthStep;
 import iteration2.steps.UserSteps;
 import iteration2.utils.UserGenerator;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,7 +40,10 @@ public class MakeDepositTest {
 
     @Test
     public void canDepositByAuthUser() {
+        float balanceBeforeDeposit = AccountStep.getBalance(userToken,accountId);
         AccountStep.deposit(userToken, accountId, 100);
+        float balanceAfterDeposit = AccountStep.getBalance(userToken,accountId);
+        Assertions.assertEquals(balanceBeforeDeposit + 100, balanceAfterDeposit);
     }
 
 

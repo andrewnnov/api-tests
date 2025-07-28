@@ -9,6 +9,7 @@ import iteration2.steps.AuthStep;
 import iteration2.steps.UserSteps;
 import iteration2.utils.UserGenerator;
 import org.hamcrest.Matchers;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,6 +42,10 @@ public class MakeDepositNegativeTest {
 
         String generatedUserName2 = UserGenerator.generateUsername("User2");
         String userToken2 = UserSteps.createUser(adminToken, generatedUserName2, "Pass123!");
+        int user2AccountId = AccountStep.createAccount(userToken2);
+
+        float balanceBeforeDepositUser1 = AccountStep.getBalance(userToken1,user1AccountId);
+        float balanceBeforeDepositUser2 = AccountStep.getBalance(userToken2,user2AccountId);
 
         //user2 try to do deposit to user 1 account
         given()
@@ -57,6 +62,12 @@ public class MakeDepositNegativeTest {
                 .then()
                 .statusCode(403)
                 .body(Matchers.equalTo("Unauthorized access to account"));
+
+        float balanceAfterDepositUser1 = AccountStep.getBalance(userToken1,user1AccountId);
+        float balanceAfterDepositUser2 = AccountStep.getBalance(userToken2,user2AccountId);
+
+        Assertions.assertEquals(balanceBeforeDepositUser1, balanceAfterDepositUser1);
+        Assertions.assertEquals(balanceBeforeDepositUser2, balanceAfterDepositUser2);
     }
 
     @Test
@@ -67,6 +78,8 @@ public class MakeDepositNegativeTest {
         String userToken1 = UserSteps.createUser(adminToken, generatedUserName1, "Pass123!");
         int user1AccountId = AccountStep.createAccount(userToken1);
         int notExistingAccountId = 5678;
+
+        float balanceBeforeDepositUser1 = AccountStep.getBalance(userToken1,user1AccountId);
 
         given()
                 .header("authorization", userToken1)
@@ -82,6 +95,9 @@ public class MakeDepositNegativeTest {
                 .then()
                 .statusCode(403)
                 .body(Matchers.equalTo("Unauthorized access to account"));
+
+        float balanceAfterDepositUser1 = AccountStep.getBalance(userToken1,user1AccountId);
+        Assertions.assertEquals(balanceBeforeDepositUser1, balanceAfterDepositUser1);
     }
 
     @Test
@@ -91,6 +107,8 @@ public class MakeDepositNegativeTest {
         String generatedUserName1 = UserGenerator.generateUsername("User1");
         String userToken1 = UserSteps.createUser(adminToken, generatedUserName1, "Pass123!");
         int user1AccountId = AccountStep.createAccount(userToken1);
+
+        float balanceBeforeDepositUser1 = AccountStep.getBalance(userToken1,user1AccountId);
 
         given()
                 .header("authorization", userToken1)
@@ -106,6 +124,9 @@ public class MakeDepositNegativeTest {
                 .then()
                 .statusCode(400)
                 .body(Matchers.equalTo("Invalid account or amount"));
+
+        float balanceAfterDepositUser1 = AccountStep.getBalance(userToken1,user1AccountId);
+        Assertions.assertEquals(balanceBeforeDepositUser1, balanceAfterDepositUser1);
     }
 
     @Test
@@ -115,6 +136,8 @@ public class MakeDepositNegativeTest {
         String generatedUserName1 = UserGenerator.generateUsername("User1");
         String userToken1 = UserSteps.createUser(adminToken, generatedUserName1, "Pass123!");
         int user1AccountId = AccountStep.createAccount(userToken1);
+
+        float balanceBeforeDepositUser1 = AccountStep.getBalance(userToken1,user1AccountId);
 
         given()
                 .header("authorization", userToken1)
@@ -130,6 +153,9 @@ public class MakeDepositNegativeTest {
                 .then()
                 .statusCode(400)
                 .body(Matchers.equalTo("Invalid account or amount"));
+
+        float balanceAfterDepositUser1 = AccountStep.getBalance(userToken1,user1AccountId);
+        Assertions.assertEquals(balanceBeforeDepositUser1, balanceAfterDepositUser1);
     }
 
 }
