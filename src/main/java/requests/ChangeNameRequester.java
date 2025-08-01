@@ -7,22 +7,20 @@ import models.BaseModel;
 
 import static io.restassured.RestAssured.given;
 
-public class LoginUserRequester extends Request {
-
-    public LoginUserRequester(RequestSpecification requestSpecification, ResponseSpecification responseSpecification) {
+public class ChangeNameRequester extends PutRequest {
+    public ChangeNameRequester(RequestSpecification requestSpecification, ResponseSpecification responseSpecification) {
         super(requestSpecification, responseSpecification);
     }
 
     @Override
-    public ValidatableResponse post(BaseModel model) {
+    public ValidatableResponse put(BaseModel model) {
         return given()
                 .spec(requestSpecification)
                 .body(model)
-                .post("/api/v1/auth/login")
+                .put("/api/v1/customer/profile")
                 .then()
                 .assertThat()
                 .spec(responseSpecification);
     }
 }
-
 

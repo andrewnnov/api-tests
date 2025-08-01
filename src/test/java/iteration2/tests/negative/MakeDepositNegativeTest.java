@@ -1,161 +1,199 @@
 package iteration2.tests.negative;
 
-import io.restassured.RestAssured;
-import io.restassured.filter.log.RequestLoggingFilter;
-import io.restassured.filter.log.ResponseLoggingFilter;
-import io.restassured.http.ContentType;
-import iteration2.steps.AccountStep;
-import iteration2.steps.AuthStep;
-import iteration2.steps.UserSteps;
-import iteration2.utils.UserGenerator;
-import org.hamcrest.Matchers;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
+import generators.RandomData;
+import helpers.AccountBalanceUtils;
+import io.restassured.response.ValidatableResponse;
+import iteration1.BaseTest;
+import models.CreateUserRequestModel;
+import models.MakeDepositRequestModel;
+import models.MakeDepositResponseModel;
+import models.UserRole;
 import org.junit.jupiter.api.Test;
+import requests.AdminCreateUserRequester;
+import requests.CreateAccountRequester;
+import requests.CreateDepositRequester;
+import specs.RequestSpecs;
+import specs.ResponseSpecs;
 
-import java.util.List;
-
-import static io.restassured.RestAssured.given;
-
-public class MakeDepositNegativeTest {
-    private static final String ADMIN_USERNAME = "admin";
-    private static final String ADMIN_PASSWORD = "admin";
-    private static final String BASE_URL = "http://localhost:4111/api/v1";
-
-
-    @BeforeAll
-    public static void setupRestAssured() {
-        RestAssured.filters(List.of(
-                new RequestLoggingFilter(),
-                new ResponseLoggingFilter()
-        ));
-    }
+public class MakeDepositNegativeTest extends BaseTest {
+    private static final long NOT_EXISTING_ACCOUNT_ID = 45678;
 
     @Test
     public void userCannotDepositToAnotherUserAccount() {
-        String adminToken = AuthStep.login(ADMIN_USERNAME, ADMIN_PASSWORD);
 
-        String generatedUserName1 = UserGenerator.generateUsername("User1");
-        String userToken1 = UserSteps.createUser(adminToken, generatedUserName1, "Pass123!");
-        int user1AccountId = AccountStep.createAccount(userToken1);
+        CreateUserRequestModel createdUser1 = CreateUserRequestModel.builder()
+                .username(RandomData.getUserName())
+                .password(RandomData.getPassword())
+                .role(UserRole.USER.toString())
+                .build();
 
-        String generatedUserName2 = UserGenerator.generateUsername("User2");
-        String userToken2 = UserSteps.createUser(adminToken, generatedUserName2, "Pass123!");
-        int user2AccountId = AccountStep.createAccount(userToken2);
+        CreateUserRequestModel createdUser2 = CreateUserRequestModel.builder()
+                .username(RandomData.getUserName())
+                .password(RandomData.getPassword())
+                .role(UserRole.USER.toString())
+                .build();
 
-        float balanceBeforeDepositUser1 = AccountStep.getBalance(userToken1,user1AccountId);
-        float balanceBeforeDepositUser2 = AccountStep.getBalance(userToken2,user2AccountId);
+        new AdminCreateUserRequester(RequestSpecs.adminSpec(), ResponseSpecs.entityWasCreated())
+                .post(createdUser1);
 
-        //user2 try to do deposit to user 1 account
-        given()
-                .header("authorization", userToken2)
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .body(String.format("""
-                        {
-                          "id": %d,
-                          "balance": 100.00
-                        }
-                        """, user1AccountId))
-                .post(BASE_URL + "/accounts/deposit")
-                .then()
-                .statusCode(403)
-                .body(Matchers.equalTo("Unauthorized access to account"));
+        new AdminCreateUserRequester(RequestSpecs.adminSpec(), ResponseSpecs.entityWasCreated())
+                .post(createdUser2);
 
-        float balanceAfterDepositUser1 = AccountStep.getBalance(userToken1,user1AccountId);
-        float balanceAfterDepositUser2 = AccountStep.getBalance(userToken2,user2AccountId);
+        ValidatableResponse createAccountResponse1 = new CreateAccountRequester(
+                RequestSpecs.authAsUser(createdUser1.getUsername(), createdUser1.getPassword()),
+                ResponseSpecs.entityWasCreated())
+                .post(null);
 
-        Assertions.assertEquals(balanceBeforeDepositUser1, balanceAfterDepositUser1);
-        Assertions.assertEquals(balanceBeforeDepositUser2, balanceAfterDepositUser2);
+        long accountIdOne = ((Integer) createAccountResponse1.extract().path("id")).longValue();
+
+        ValidatableResponse createAccountResponse2 = new CreateAccountRequester(
+                RequestSpecs.authAsUser(createdUser2.getUsername(), createdUser2.getPassword()),
+                ResponseSpecs.entityWasCreated())
+                .post(null);
+
+        long accountIdTwo = ((Integer) createAccountResponse2.extract().path("id")).longValue();
+
+        MakeDepositResponseModel makeDeposit = MakeDepositResponseModel.builder()
+                .id(accountIdTwo)
+                .balance(100.00)
+                .build();
+
+        double senderAccountBalanceBefore = AccountBalanceUtils.getBalanceForAccount(createdUser1.getUsername(),
+                createdUser1.getPassword(), accountIdOne);
+
+        new CreateDepositRequester(RequestSpecs.depositAsAuthUser(
+                createdUser1.getUsername(),
+                createdUser1.getPassword()),
+                ResponseSpecs.requestReturnsForbidden("Unauthorized access to account"))
+                .post(makeDeposit);
+
+        double senderAccountBalanceAfter = AccountBalanceUtils.getBalanceForAccount(createdUser1.getUsername(),
+                createdUser1.getPassword(), accountIdOne);
+
+        softly.assertThat(senderAccountBalanceBefore).isEqualTo(senderAccountBalanceAfter);
     }
+
 
     @Test
     public void userCannotDepositToNotExistingUserAccountId() {
-        String adminToken = AuthStep.login(ADMIN_USERNAME, ADMIN_PASSWORD);
 
-        String generatedUserName1 = UserGenerator.generateUsername("User1");
-        String userToken1 = UserSteps.createUser(adminToken, generatedUserName1, "Pass123!");
-        int user1AccountId = AccountStep.createAccount(userToken1);
-        int notExistingAccountId = 5678;
+        CreateUserRequestModel createdUser1 = CreateUserRequestModel.builder()
+                .username(RandomData.getUserName())
+                .password(RandomData.getPassword())
+                .role(UserRole.USER.toString())
+                .build();
 
-        float balanceBeforeDepositUser1 = AccountStep.getBalance(userToken1,user1AccountId);
+        new AdminCreateUserRequester(RequestSpecs.adminSpec(), ResponseSpecs.entityWasCreated())
+                .post(createdUser1);
 
-        given()
-                .header("authorization", userToken1)
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .body(String.format("""
-                        {
-                          "id": %d,
-                          "balance": 200.00
-                        }
-                        """, notExistingAccountId))
-                .post(BASE_URL + "/accounts/deposit")
-                .then()
-                .statusCode(403)
-                .body(Matchers.equalTo("Unauthorized access to account"));
+        ValidatableResponse createAccountResponse1 = new CreateAccountRequester(
+                RequestSpecs.authAsUser(createdUser1.getUsername(), createdUser1.getPassword()),
+                ResponseSpecs.entityWasCreated())
+                .post(null);
 
-        float balanceAfterDepositUser1 = AccountStep.getBalance(userToken1,user1AccountId);
-        Assertions.assertEquals(balanceBeforeDepositUser1, balanceAfterDepositUser1);
+        long accountIdOne = ((Integer) createAccountResponse1.extract().path("id")).longValue();
+
+        MakeDepositResponseModel makeDeposit = MakeDepositResponseModel.builder()
+                .id(NOT_EXISTING_ACCOUNT_ID)
+                .balance(100.00)
+                .build();
+
+        double senderAccountBalanceBefore = AccountBalanceUtils.getBalanceForAccount(createdUser1.getUsername(),
+                createdUser1.getPassword(), accountIdOne);
+
+        new CreateDepositRequester(RequestSpecs.depositAsAuthUser(
+                createdUser1.getUsername(),
+                createdUser1.getPassword()),
+                ResponseSpecs.requestReturnsForbidden("Unauthorized access to account"))
+                .post(makeDeposit);
+
+        double senderAccountBalanceAfter = AccountBalanceUtils.getBalanceForAccount(createdUser1.getUsername(),
+                createdUser1.getPassword(), accountIdOne);
+
+        softly.assertThat(senderAccountBalanceBefore).isEqualTo(senderAccountBalanceAfter);
     }
+
 
     @Test
     public void userCannotMakeNegativeDeposit() {
-        String adminToken = AuthStep.login(ADMIN_USERNAME, ADMIN_PASSWORD);
 
-        String generatedUserName1 = UserGenerator.generateUsername("User1");
-        String userToken1 = UserSteps.createUser(adminToken, generatedUserName1, "Pass123!");
-        int user1AccountId = AccountStep.createAccount(userToken1);
+        //creating model of user
+        CreateUserRequestModel createdUser = CreateUserRequestModel.builder()
+                .username(RandomData.getUserName())
+                .password(RandomData.getPassword())
+                .role(UserRole.USER.toString())
+                .build();
 
-        float balanceBeforeDepositUser1 = AccountStep.getBalance(userToken1,user1AccountId);
+        //creating user by admin
+        new AdminCreateUserRequester(RequestSpecs.adminSpec(), ResponseSpecs.entityWasCreated())
+                .post(createdUser);
 
-        given()
-                .header("authorization", userToken1)
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .body(String.format("""
-                        {
-                          "id": %d,
-                          "balance": -25.00
-                        }
-                        """, user1AccountId))
-                .post(BASE_URL + "/accounts/deposit")
-                .then()
-                .statusCode(400)
-                .body(Matchers.equalTo("Invalid account or amount"));
+        //creating account
+        ValidatableResponse createAccountResponse = new CreateAccountRequester(RequestSpecs
+                .authAsUser(createdUser.getUsername(), createdUser.getPassword()),
+                ResponseSpecs.entityWasCreated())
+                .post(null);
 
-        float balanceAfterDepositUser1 = AccountStep.getBalance(userToken1,user1AccountId);
-        Assertions.assertEquals(balanceBeforeDepositUser1, balanceAfterDepositUser1);
+        //get account id
+        long accountId = ((Integer) createAccountResponse.extract().path("id")).longValue();
+
+        //creating model for deposit
+        MakeDepositRequestModel makeDeposit = MakeDepositRequestModel.builder()
+                .id(accountId)
+                .balance(-50.00).build();
+
+        double senderAccountBalanceBefore = AccountBalanceUtils.getBalanceForAccount(createdUser.getUsername(),
+                createdUser.getPassword(), accountId);
+
+        //make deposit
+         new CreateDepositRequester(RequestSpecs
+                .depositAsAuthUser(createdUser.getUsername(), createdUser.getPassword()),
+                ResponseSpecs.requestReturnsBadRequest("Invalid account or amount"))
+                .post(makeDeposit);
+
+        double senderAccountBalanceAfter = AccountBalanceUtils.getBalanceForAccount(createdUser.getUsername(),
+                createdUser.getPassword(), accountId);
     }
+
 
     @Test
     public void userCannotMakeZeroDeposit() {
-        String adminToken = AuthStep.login(ADMIN_USERNAME, ADMIN_PASSWORD);
+        CreateUserRequestModel createdUser = CreateUserRequestModel.builder()
+                .username(RandomData.getUserName())
+                .password(RandomData.getPassword())
+                .role(UserRole.USER.toString())
+                .build();
 
-        String generatedUserName1 = UserGenerator.generateUsername("User1");
-        String userToken1 = UserSteps.createUser(adminToken, generatedUserName1, "Pass123!");
-        int user1AccountId = AccountStep.createAccount(userToken1);
+        //creating user by admin
+        new AdminCreateUserRequester(RequestSpecs.adminSpec(), ResponseSpecs.entityWasCreated())
+                .post(createdUser);
 
-        float balanceBeforeDepositUser1 = AccountStep.getBalance(userToken1,user1AccountId);
+        //creating account
+        ValidatableResponse createAccountResponse = new CreateAccountRequester(RequestSpecs
+                .authAsUser(createdUser.getUsername(), createdUser.getPassword()),
+                ResponseSpecs.entityWasCreated())
+                .post(null);
 
-        given()
-                .header("authorization", userToken1)
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .body(String.format("""
-                        {
-                          "id": %d,
-                          "balance": 0.00
-                        }
-                        """, user1AccountId))
-                .post(BASE_URL + "/accounts/deposit")
-                .then()
-                .statusCode(400)
-                .body(Matchers.equalTo("Invalid account or amount"));
+        //get account id
+        long accountId = ((Integer) createAccountResponse.extract().path("id")).longValue();
 
-        float balanceAfterDepositUser1 = AccountStep.getBalance(userToken1,user1AccountId);
-        Assertions.assertEquals(balanceBeforeDepositUser1, balanceAfterDepositUser1);
+        //creating model for deposit
+        MakeDepositRequestModel makeDeposit = MakeDepositRequestModel.builder()
+                .id(accountId)
+                .balance(0.00).build();
+
+        double senderAccountBalanceBefore = AccountBalanceUtils.getBalanceForAccount(createdUser.getUsername(),
+                createdUser.getPassword(), accountId);
+
+        //make deposit
+        new CreateDepositRequester(RequestSpecs
+                .depositAsAuthUser(createdUser.getUsername(), createdUser.getPassword()),
+                ResponseSpecs.requestReturnsBadRequest("Invalid account or amount"))
+                .post(makeDeposit);
+
+        double senderAccountBalanceAfter = AccountBalanceUtils.getBalanceForAccount(createdUser.getUsername(),
+                createdUser.getPassword(), accountId);
+
+        softly.assertThat(senderAccountBalanceBefore).isEqualTo(senderAccountBalanceAfter);
     }
-
 }

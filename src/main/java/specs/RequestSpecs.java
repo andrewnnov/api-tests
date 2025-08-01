@@ -45,4 +45,9 @@ public class RequestSpecs {
         return defaultRequestBuilder().addHeader("Authorization", userAuthHeader).build();
     }
 
+    public static RequestSpecification depositAsAuthUser(String username, String password) {
+        return authAsUser(username, password);
+    }
+
+
 }

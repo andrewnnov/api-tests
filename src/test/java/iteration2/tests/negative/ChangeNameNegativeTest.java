@@ -1,62 +1,62 @@
 package iteration2.tests.negative;
 
-import io.restassured.RestAssured;
-import io.restassured.filter.log.RequestLoggingFilter;
-import io.restassured.filter.log.ResponseLoggingFilter;
-import iteration2.steps.AuthStep;
-import iteration2.steps.ProfileStep;
-import iteration2.steps.UserSteps;
-import iteration2.utils.UserGenerator;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
+import generators.RandomData;
+import iteration1.BaseTest;
+import models.ChangeNameRequestModel;
+import models.ChangeNameResponseModel;
+import models.CreateUserRequestModel;
+import models.UserRole;
 import org.junit.jupiter.api.Test;
+import requests.AdminCreateUserRequester;
+import requests.ChangeNameRequester;
+import specs.RequestSpecs;
+import specs.ResponseSpecs;
 
-import java.util.List;
-
-public class ChangeNameNegativeTest {
-    private static final String ADMIN_USERNAME = "admin";
-    private static final String ADMIN_PASSWORD = "admin";
-
-    private String adminToken;
-    private String userToken;
-
-
-    @BeforeAll
-    public static void setupRestAssured() {
-        RestAssured.filters(List.of(
-                new RequestLoggingFilter(),
-                new ResponseLoggingFilter()
-        ));
-    }
-
-    @BeforeEach
-    public void setUp() {
-        adminToken = AuthStep.login(ADMIN_USERNAME, ADMIN_PASSWORD);
-        String generatedUserName = UserGenerator.generateUsername("User");
-        userToken = UserSteps.createUser(adminToken, generatedUserName, "Kate5000!");
-
-    }
-
+public class ChangeNameNegativeTest extends BaseTest {
     //bug name can not be a blanc
     @Test
     public void authUserCanNotUpdateOwnNameWithBlancValue() {
-        String newName = "   ";
+        String newUserName = "   ";
+        CreateUserRequestModel createdUser = CreateUserRequestModel.builder()
+                .username(RandomData.getUserName())
+                .password(RandomData.getPassword())
+                .role(UserRole.USER.toString())
+                .build();
 
-        ProfileStep.updateUserName(userToken, newName);
-        String actualName = ProfileStep.getUserName(userToken);
-        Assertions.assertEquals(newName, actualName);
+        new AdminCreateUserRequester(RequestSpecs.adminSpec(), ResponseSpecs.entityWasCreated())
+                .post(createdUser);
+
+        ChangeNameRequestModel changeName = ChangeNameRequestModel.builder()
+                .name(newUserName).build();
+
+        ChangeNameResponseModel responseModel = new ChangeNameRequester(RequestSpecs.authAsUser(createdUser.getUsername(),
+                createdUser.getPassword()), ResponseSpecs.requestReturnOK("Profile updated successfully"))
+                .put(changeName).extract().as(ChangeNameResponseModel.class);
+
+        softly.assertThat(newUserName).isEqualTo(responseModel.getCustomer().getName());
     }
 
     //bug I can inject js
     @Test
     public void userCannotInjectJavaScriptInNameField() {
-        String newName = "<script>alert('XSS')</script>";
+        String newUserName = "<script>alert('XSS')</script>";
 
-        ProfileStep.updateUserName(userToken, newName);
-        String actualName = ProfileStep.getUserName(userToken);
-        Assertions.assertEquals(newName, actualName);
+        CreateUserRequestModel createdUser = CreateUserRequestModel.builder()
+                .username(RandomData.getUserName())
+                .password(RandomData.getPassword())
+                .role(UserRole.USER.toString())
+                .build();
+
+        new AdminCreateUserRequester(RequestSpecs.adminSpec(), ResponseSpecs.entityWasCreated())
+                .post(createdUser);
+
+        ChangeNameRequestModel changeName = ChangeNameRequestModel.builder()
+                .name(newUserName).build();
+
+        ChangeNameResponseModel responseModel = new ChangeNameRequester(RequestSpecs.authAsUser(createdUser.getUsername(),
+                createdUser.getPassword()), ResponseSpecs.requestReturnOK("Profile updated successfully"))
+                .put(changeName).extract().as(ChangeNameResponseModel.class);
+
+        softly.assertThat(newUserName).isEqualTo(responseModel.getCustomer().getName());
     }
-
-
 }

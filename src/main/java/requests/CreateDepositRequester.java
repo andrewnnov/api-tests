@@ -7,9 +7,8 @@ import models.BaseModel;
 
 import static io.restassured.RestAssured.given;
 
-public class LoginUserRequester extends Request {
-
-    public LoginUserRequester(RequestSpecification requestSpecification, ResponseSpecification responseSpecification) {
+public class CreateDepositRequester extends Request{
+    public CreateDepositRequester(RequestSpecification requestSpecification, ResponseSpecification responseSpecification) {
         super(requestSpecification, responseSpecification);
     }
 
@@ -18,11 +17,9 @@ public class LoginUserRequester extends Request {
         return given()
                 .spec(requestSpecification)
                 .body(model)
-                .post("/api/v1/auth/login")
+                .post("/api/v1/accounts/deposit")
                 .then()
                 .assertThat()
                 .spec(responseSpecification);
     }
 }
-
-

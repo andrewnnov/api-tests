@@ -1,184 +1,284 @@
 package iteration2.tests.negative;
 
-import io.restassured.RestAssured;
-import io.restassured.filter.log.RequestLoggingFilter;
-import io.restassured.filter.log.ResponseLoggingFilter;
-import io.restassured.http.ContentType;
-import iteration2.steps.AccountStep;
-import iteration2.steps.AuthStep;
-import iteration2.steps.UserSteps;
-import iteration2.utils.UserGenerator;
-import org.apache.http.HttpStatus;
-import org.hamcrest.Matchers;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
+import generators.RandomData;
+import helpers.AccountBalanceUtils;
+import io.restassured.response.ValidatableResponse;
+import iteration1.BaseTest;
+import models.*;
 import org.junit.jupiter.api.Test;
+import requests.AdminCreateUserRequester;
+import requests.CreateAccountRequester;
+import requests.CreateDepositRequester;
+import requests.MakeTransferRequester;
+import specs.RequestSpecs;
+import specs.ResponseSpecs;
 
-import java.util.List;
-
-import static io.restassured.RestAssured.given;
-
-public class MakeTransferNegativeTest {
-    private static final String ADMIN_USERNAME = "admin";
-    private static final String ADMIN_PASSWORD = "admin";
-    private static final String BASE_URL = "http://localhost:4111/api/v1";
-
-    private String adminToken;
-    private String userToken;
-    private int senderAccountId;
-    private int receiverAccountId;
-
-
-    @BeforeAll
-    public static void setupRestAssured() {
-        RestAssured.filters(List.of(
-                new RequestLoggingFilter(),
-                new ResponseLoggingFilter()
-        ));
-    }
-
-    @BeforeEach
-    public void setUp() {
-        adminToken = AuthStep.login(ADMIN_USERNAME, ADMIN_PASSWORD);
-        String generatedUserName = UserGenerator.generateUsername("User");
-        userToken = UserSteps.createUser(adminToken, generatedUserName, "Kate5000!");
-        senderAccountId = AccountStep.createAccount(userToken);
-        receiverAccountId = AccountStep.createAccount(userToken);
-    }
+public class MakeTransferNegativeTest extends BaseTest {
+    private static final long NOT_EXISTING_ACCOUNT_ID = 45678;
 
     @Test
     public void authUserCanNotTransferMoneyToOwnAccountMoreThatAccountHas() {
-        float depositAmount = 200.0F;
-        float transferAmount = 300.0F;
-        AccountStep.deposit(userToken, senderAccountId, depositAmount);
-        float balanceSenderBefore = AccountStep.getBalance(userToken, senderAccountId);
-        float balanceReceiveBefore = AccountStep.getBalance(userToken, receiverAccountId);
 
-        given()
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .header("authorization", userToken)
-                .body(String.format("""
-                        {
-                          "senderAccountId": %d,
-                          "receiverAccountId": %d,
-                          "amount": %.2f
-                        }
-                        """, senderAccountId, receiverAccountId, transferAmount))
-                .post(BASE_URL + "/accounts/transfer")
-                .then()
-                .statusCode(HttpStatus.SC_BAD_REQUEST)
-                .body(Matchers.equalTo("Invalid transfer: insufficient funds or invalid accounts"));
+        //creating model of user
+        CreateUserRequestModel createdUser = CreateUserRequestModel.builder()
+                .username(RandomData.getUserName())
+                .password(RandomData.getPassword())
+                .role(UserRole.USER.toString())
+                .build();
 
+        //creating user by admin
+        new AdminCreateUserRequester(RequestSpecs.adminSpec(), ResponseSpecs.entityWasCreated())
+                .post(createdUser);
 
-        float balanceSenderAfter = AccountStep.getBalance(userToken, senderAccountId);
-        float balanceReceiveAfter = AccountStep.getBalance(userToken, receiverAccountId);
+        //creating account 1
+        ValidatableResponse createAccountResponseOne = new CreateAccountRequester(RequestSpecs
+                .authAsUser(createdUser.getUsername(), createdUser.getPassword()),
+                ResponseSpecs.entityWasCreated())
+                .post(null);
 
-        Assertions.assertEquals(balanceSenderBefore, balanceSenderAfter);
-        Assertions.assertEquals(balanceReceiveBefore, balanceReceiveAfter);
+        //get account id
+        long accountIdOne = ((Integer) createAccountResponseOne.extract().path("id")).longValue();
+
+        //creating account 2
+        ValidatableResponse createAccountResponseTwo = new CreateAccountRequester(RequestSpecs
+                .authAsUser(createdUser.getUsername(), createdUser.getPassword()),
+                ResponseSpecs.entityWasCreated())
+                .post(null);
+
+        //get account id
+        long accountIdTwo = ((Integer) createAccountResponseTwo.extract().path("id")).longValue();
+
+        MakeDepositRequestModel makeDeposit = MakeDepositRequestModel.builder()
+                .id(accountIdOne)
+                .balance(100.00).build();
+
+        MakeDepositResponseModel responseModel = new CreateDepositRequester(RequestSpecs
+                .depositAsAuthUser(createdUser.getUsername(), createdUser.getPassword()),
+                ResponseSpecs.requestReturnsOK())
+                .post(makeDeposit).extract().as(MakeDepositResponseModel.class);
+
+        double senderAccountBalanceBefore = AccountBalanceUtils.getBalanceForAccount(createdUser.getUsername(),
+                createdUser.getPassword(), accountIdOne);
+
+        //create transfer model
+        MakeTransferRequestModel transferRequestModel = MakeTransferRequestModel.builder()
+                .senderAccountId(accountIdOne)
+                .receiverAccountId(accountIdTwo)
+                .amount(4000.00).build();
+
+        //create transaction
+        new MakeTransferRequester(
+                RequestSpecs.authAsUser(createdUser.getUsername(), createdUser.getPassword()),
+                ResponseSpecs.requestReturnsBadRequest("Invalid transfer: insufficient funds or invalid accounts"))
+                .post(transferRequestModel);
+
+        //check balance of account after transaction
+        double senderAccountBalanceAfter = AccountBalanceUtils.getBalanceForAccount(createdUser.getUsername(),
+                createdUser.getPassword(), accountIdOne);
+
+        softly.assertThat(senderAccountBalanceBefore).isEqualTo(senderAccountBalanceAfter);
     }
 
     @Test
     public void authUserCanNotTransferMoneyToOwnAccountNegativeAmount() {
-        float depositAmount = 200.0F;
-        float transferAmount = -300.0F;
-        AccountStep.deposit(userToken, senderAccountId, depositAmount);
-        float balanceSenderBefore = AccountStep.getBalance(userToken, senderAccountId);
-        float balanceReceiveBefore = AccountStep.getBalance(userToken, receiverAccountId);
+        //creating model of user
+        CreateUserRequestModel createdUser = CreateUserRequestModel.builder()
+                .username(RandomData.getUserName())
+                .password(RandomData.getPassword())
+                .role(UserRole.USER.toString())
+                .build();
 
-        given()
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .header("authorization", userToken)
-                .body(String.format("""
-                        {
-                          "senderAccountId": %d,
-                          "receiverAccountId": %d,
-                          "amount": %.2f
-                        }
-                        """, senderAccountId, receiverAccountId, transferAmount))
-                .post(BASE_URL + "/accounts/transfer")
-                .then()
-                .statusCode(HttpStatus.SC_BAD_REQUEST)
-                .body(Matchers.equalTo("Invalid transfer: insufficient funds or invalid accounts"));
+        //creating user by admin
+        new AdminCreateUserRequester(RequestSpecs.adminSpec(), ResponseSpecs.entityWasCreated())
+                .post(createdUser);
+
+        //creating account 1
+        ValidatableResponse createAccountResponseOne = new CreateAccountRequester(RequestSpecs
+                .authAsUser(createdUser.getUsername(), createdUser.getPassword()),
+                ResponseSpecs.entityWasCreated())
+                .post(null);
+
+        //get account id
+        long accountIdOne = ((Integer) createAccountResponseOne.extract().path("id")).longValue();
+
+        //creating account 2
+        ValidatableResponse createAccountResponseTwo = new CreateAccountRequester(RequestSpecs
+                .authAsUser(createdUser.getUsername(), createdUser.getPassword()),
+                ResponseSpecs.entityWasCreated())
+                .post(null);
+
+        //get account id
+        long accountIdTwo = ((Integer) createAccountResponseTwo.extract().path("id")).longValue();
+
+        MakeDepositRequestModel makeDeposit = MakeDepositRequestModel.builder()
+                .id(accountIdOne)
+                .balance(100.00).build();
+
+        MakeDepositResponseModel responseModel = new CreateDepositRequester(RequestSpecs
+                .depositAsAuthUser(createdUser.getUsername(), createdUser.getPassword()),
+                ResponseSpecs.requestReturnsOK())
+                .post(makeDeposit).extract().as(MakeDepositResponseModel.class);
+
+        double senderAccountBalanceBefore = AccountBalanceUtils.getBalanceForAccount(createdUser.getUsername(),
+                createdUser.getPassword(), accountIdOne);
+
+        //create transfer model
+        MakeTransferRequestModel transferRequestModel = MakeTransferRequestModel.builder()
+                .senderAccountId(accountIdOne)
+                .receiverAccountId(accountIdTwo)
+                .amount(-35).build();
 
 
-        float balanceSenderAfter = AccountStep.getBalance(userToken, senderAccountId);
-        float balanceReceiveAfter = AccountStep.getBalance(userToken, receiverAccountId);
+        //create transaction
+        new MakeTransferRequester(
+                RequestSpecs.authAsUser(createdUser.getUsername(), createdUser.getPassword()),
+                ResponseSpecs.requestReturnsBadRequest("Invalid transfer: insufficient funds or invalid accounts"))
+                .post(transferRequestModel);
 
-        Assertions.assertEquals(balanceSenderBefore, balanceSenderAfter);
-        Assertions.assertEquals(balanceReceiveBefore, balanceReceiveAfter);
+        //check balance of account after transaction
+        double senderAccountBalanceAfter = AccountBalanceUtils.getBalanceForAccount(createdUser.getUsername(),
+                createdUser.getPassword(), accountIdOne);
+
+        softly.assertThat(senderAccountBalanceBefore).isEqualTo(senderAccountBalanceAfter);
+
     }
 
     @Test
     public void authUserCanNotTransferMoneyToNotExistingAccount() {
-        float depositAmount = 200.0F;
-        float transferAmount = 100.0F;
-        AccountStep.deposit(userToken, senderAccountId, depositAmount);
-        float balanceSenderBefore = AccountStep.getBalance(userToken, senderAccountId);
-        int notExistingAccountId = 5678;
+
+        //creating model of user
+        CreateUserRequestModel createdUser = CreateUserRequestModel.builder()
+                .username(RandomData.getUserName())
+                .password(RandomData.getPassword())
+                .role(UserRole.USER.toString())
+                .build();
+
+        //creating user by admin
+        new AdminCreateUserRequester(RequestSpecs.adminSpec(), ResponseSpecs.entityWasCreated())
+                .post(createdUser);
+
+        //creating account 1
+        ValidatableResponse createAccountResponseOne = new CreateAccountRequester(RequestSpecs
+                .authAsUser(createdUser.getUsername(), createdUser.getPassword()),
+                ResponseSpecs.entityWasCreated())
+                .post(null);
+
+        //get account id
+        long accountIdOne = ((Integer) createAccountResponseOne.extract().path("id")).longValue();
+
+        MakeDepositRequestModel makeDeposit = MakeDepositRequestModel.builder()
+                .id(accountIdOne)
+                .balance(100.00).build();
+
+        MakeDepositResponseModel responseModel = new CreateDepositRequester(RequestSpecs
+                .depositAsAuthUser(createdUser.getUsername(), createdUser.getPassword()),
+                ResponseSpecs.requestReturnsOK())
+                .post(makeDeposit).extract().as(MakeDepositResponseModel.class);
+
+        double senderAccountBalanceBefore = AccountBalanceUtils.getBalanceForAccount(createdUser.getUsername(),
+                createdUser.getPassword(), accountIdOne);
+
+        //create transfer model
+        MakeTransferRequestModel transferRequestModel = MakeTransferRequestModel.builder()
+                .senderAccountId(accountIdOne)
+                .receiverAccountId(NOT_EXISTING_ACCOUNT_ID)
+                .amount(20.00).build();
 
 
-        given()
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .header("authorization", userToken)
-                .body(String.format("""
-                        {
-                          "senderAccountId": %d,
-                          "receiverAccountId": %d,
-                          "amount": %.2f
-                        }
-                        """, senderAccountId, notExistingAccountId, transferAmount))
-                .post(BASE_URL + "/accounts/transfer")
-                .then()
-                .statusCode(HttpStatus.SC_BAD_REQUEST)
-                .body(Matchers.equalTo("Invalid transfer: insufficient funds or invalid accounts"));
+        //create transaction
+        new MakeTransferRequester(
+                RequestSpecs.authAsUser(createdUser.getUsername(), createdUser.getPassword()),
+                ResponseSpecs.requestReturnsBadRequest("Invalid transfer: insufficient funds or invalid accounts"))
+                .post(transferRequestModel);
 
+        //check balance of account after transaction
+        double senderAccountBalanceAfter = AccountBalanceUtils.getBalanceForAccount(createdUser.getUsername(),
+                createdUser.getPassword(), accountIdOne);
 
-        float balanceSenderAfter = AccountStep.getBalance(userToken, senderAccountId);
-        Assertions.assertEquals(balanceSenderBefore, balanceSenderAfter);
-
+        softly.assertThat(senderAccountBalanceBefore).isEqualTo(senderAccountBalanceAfter);
     }
 
     @Test
     public void transferFromOtherAccountShouldBeForbidden() {
-        float depositAmount = 200.0F;
-        float transferAmount = 300.0F;
-        AccountStep.deposit(userToken, senderAccountId, depositAmount);
-        float balanceSenderBefore = AccountStep.getBalance(userToken, senderAccountId);
+        //creating model of user1
+        CreateUserRequestModel createdUser1 = CreateUserRequestModel.builder()
+                .username(RandomData.getUserName())
+                .password(RandomData.getPassword())
+                .role(UserRole.USER.toString())
+                .build();
 
-        String generatedUserName = UserGenerator.generateUsername("User2");
-        String userToken2 = UserSteps.createUser(adminToken, generatedUserName, "Kate5000!");
-        int receiverAccountId2 = AccountStep.createAccount(userToken2);
-        float balanceReceiverBefore = AccountStep.getBalance(userToken2, receiverAccountId2);
+        //creating model of user1
+        CreateUserRequestModel createdUser2 = CreateUserRequestModel.builder()
+                .username(RandomData.getUserName())
+                .password(RandomData.getPassword())
+                .role(UserRole.USER.toString())
+                .build();
+
+        //creating user1 by admin
+        new AdminCreateUserRequester(RequestSpecs.adminSpec(), ResponseSpecs.entityWasCreated())
+                .post(createdUser1);
+
+        //creating user2 by admin
+        new AdminCreateUserRequester(RequestSpecs.adminSpec(), ResponseSpecs.entityWasCreated())
+                .post(createdUser2);
+
+        //creating account 1
+        ValidatableResponse createAccountResponseOne = new CreateAccountRequester(RequestSpecs
+                .authAsUser(createdUser1.getUsername(), createdUser1.getPassword()),
+                ResponseSpecs.entityWasCreated())
+                .post(null);
+
+        //get account 1 id
+        long accountIdOne = ((Integer) createAccountResponseOne.extract().path("id")).longValue();
+
+        //creating account 2
+        ValidatableResponse createAccountResponseTwo = new CreateAccountRequester(RequestSpecs
+                .authAsUser(createdUser2.getUsername(), createdUser2.getPassword()),
+                ResponseSpecs.entityWasCreated())
+                .post(null);
+
+        //get account 2 id
+        long accountIdTwo = ((Integer) createAccountResponseTwo.extract().path("id")).longValue();
+
+        //make deposit account 1
+        MakeDepositRequestModel makeDeposit = MakeDepositRequestModel.builder()
+                .id(accountIdOne)
+                .balance(100.00).build();
+
+        //make deposit
+        MakeDepositResponseModel responseModel = new CreateDepositRequester(RequestSpecs
+                .depositAsAuthUser(createdUser1.getUsername(), createdUser1.getPassword()),
+                ResponseSpecs.requestReturnsOK())
+                .post(makeDeposit).extract().as(MakeDepositResponseModel.class);
 
 
-        given()
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .header("authorization", userToken)
-                .body(String.format("""
-                        {
-                          "senderAccountId": %d,
-                          "receiverAccountId": %d,
-                          "amount": %.2f
-                        }
-                        """, receiverAccountId2, senderAccountId, transferAmount))
-                .post(BASE_URL + "/accounts/transfer")
-                .then()
-                .statusCode(HttpStatus.SC_FORBIDDEN)
-                .body(Matchers.equalTo("Unauthorized access to account"));
+        //create transfer model
+        MakeTransferRequestModel transferRequestModel = MakeTransferRequestModel.builder()
+                .senderAccountId(accountIdTwo)
+                .receiverAccountId(accountIdOne)
+                .amount(50.00).build();
 
+        //check balances of accounts after transaction
+        double senderAccountBalanceBefore = AccountBalanceUtils.getBalanceForAccount(createdUser1.getUsername(),
+                createdUser1.getPassword(), accountIdOne);
 
-        float balanceSenderAfter = AccountStep.getBalance(userToken, senderAccountId);
-        float balanceReceiverAfter = AccountStep.getBalance(userToken2, receiverAccountId2);
+        double receiverAccountBalanceBefore = AccountBalanceUtils.getBalanceForAccount(createdUser2.getUsername(),
+                createdUser2.getPassword(), accountIdTwo);
 
-        Assertions.assertEquals(balanceSenderBefore, balanceSenderAfter);
-        Assertions.assertEquals(balanceReceiverBefore, balanceReceiverAfter);
+        //create transaction
+        new MakeTransferRequester(
+                RequestSpecs.authAsUser(createdUser1.getUsername(), createdUser1.getPassword()),
+                ResponseSpecs.requestReturnsForbidden("Unauthorized access to account"))
+                .post(transferRequestModel);
+
+        //check balances of accounts after transaction
+        double senderAccountBalanceAfter = AccountBalanceUtils.getBalanceForAccount(createdUser1.getUsername(),
+                createdUser1.getPassword(), accountIdOne);
+
+        double receiverAccountBalanceAfter = AccountBalanceUtils.getBalanceForAccount(createdUser2.getUsername(),
+                createdUser2.getPassword(), accountIdTwo);
+
+        softly.assertThat(senderAccountBalanceBefore).isEqualTo(senderAccountBalanceAfter);
+        softly.assertThat(receiverAccountBalanceBefore).isEqualTo(receiverAccountBalanceAfter);
     }
-
-
-
 }
