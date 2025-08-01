@@ -18,7 +18,6 @@ public class MakeDepositTest extends BaseTest {
 
     @Test
     public void canDepositByAuthUser() {
-
         //creating model of user
         CreateUserRequestModel createdUser = CreateUserRequestModel.builder()
                 .username(RandomData.getUserName())
