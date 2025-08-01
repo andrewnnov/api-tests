@@ -1,33 +1,19 @@
 package iteration2.tests.positive;
 
 import generators.RandomData;
-import io.restassured.RestAssured;
-import io.restassured.filter.log.RequestLoggingFilter;
-import io.restassured.filter.log.ResponseLoggingFilter;
 import iteration1.BaseTest;
-import iteration2.steps.AuthStep;
-import iteration2.steps.ProfileStep;
-import iteration2.steps.UserSteps;
-import iteration2.utils.UserGenerator;
 import models.ChangeNameRequestModel;
 import models.ChangeNameResponseModel;
 import models.CreateUserRequestModel;
 import models.UserRole;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import requests.AdminCreateUserRequester;
 import requests.ChangeNameRequester;
 import specs.RequestSpecs;
 import specs.ResponseSpecs;
 
-import java.util.List;
-
 public class ChangeNameTest extends BaseTest {
     private String newUserName = "Anna";
-
-
 
     @Test
     public void authUserCanUpdateOwnName() {
