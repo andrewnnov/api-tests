@@ -14,10 +14,3 @@ public class MakeTransferRequestModel extends BaseModel {
     private long receiverAccountId;
     private double amount;
 }
-
-
-//{
-//        "senderAccountId": 1,
-//        "receiverAccountId": 2,
-//        "amount": 254
-//        }
