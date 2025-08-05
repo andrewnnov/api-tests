@@ -20,7 +20,7 @@ public class RequestSpecs {
                 .addFilters(List.of(
                         new RequestLoggingFilter(),
                         new ResponseLoggingFilter()))
-                .setBaseUri("http://localhost:4111");
+                .setBaseUri("http://localhost:4111/api/v1");
     }
 
     public static RequestSpecification unauthSpec() {

@@ -9,6 +9,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import requests.AdminCreateUserRequester;
+import requests.skelethon.Endpoint;
+import requests.skelethon.requester.ValidatedCrudRequester;
 import specs.RequestSpecs;
 import specs.ResponseSpecs;
 
@@ -25,9 +27,11 @@ public class CreateUserTest extends BaseTest {
                 .password(RandomData.getPassword())
                 .role(UserRole.USER.toString()).build();
 
-        CreateUserResponseModel createUserResponseModel = new AdminCreateUserRequester(RequestSpecs.adminSpec(),
+        CreateUserResponseModel createUserResponseModel = new ValidatedCrudRequester<CreateUserResponseModel>
+                (RequestSpecs.adminSpec(),
+                Endpoint.ADMIN_USER,
                 ResponseSpecs.entityWasCreated())
-                .post(createUserRequestModel).extract().as(CreateUserResponseModel.class);
+                .post(createUserRequestModel);
 
         softly.assertThat(createUserRequestModel.getUsername()).isEqualTo(createUserResponseModel.getUsername());
         softly.assertThat(createUserRequestModel.getPassword()).isNotEqualTo(createUserResponseModel.getPassword());
