@@ -142,7 +142,7 @@ public class MakeTransferTest extends BaseTest {
                 .receiverAccountId(accountIdTwo)
                 .amount(50.00).build();
 
-        //check balances of accounts after transaction
+        //check balances of accounts before transaction
         double senderAccountBalanceBefore = AccountBalanceUtils.getBalanceForAccount(createdUser1.getUsername(),
                 createdUser1.getPassword(), accountIdOne);
 
