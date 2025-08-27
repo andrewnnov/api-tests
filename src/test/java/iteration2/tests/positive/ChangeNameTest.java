@@ -2,13 +2,11 @@ package iteration2.tests.positive;
 
 import generators.RandomData;
 import iteration1.BaseTest;
-import models.ChangeNameRequestModel;
-import models.ChangeNameResponseModel;
-import models.CreateUserRequestModel;
-import models.UserRole;
+import models.*;
 import org.junit.jupiter.api.Test;
 import requests.AdminCreateUserRequester;
 import requests.ChangeNameRequester;
+import requests.GetUserRequester;
 import specs.RequestSpecs;
 import specs.ResponseSpecs;
 
@@ -34,6 +32,9 @@ public class ChangeNameTest extends BaseTest {
                 createdUser.getPassword()), ResponseSpecs.requestReturnOK("Profile updated successfully"))
                 .put(changeName).extract().as(ChangeNameResponseModel.class);
 
-        softly.assertThat(newUserName).isEqualTo(responseModel.getCustomer().getName());
+        GetNameResponseModel responseModelAfter = new GetUserRequester(RequestSpecs.authAsUser(createdUser.getUsername(),
+                createdUser.getPassword()), ResponseSpecs.requestReturnsOK()).get().extract().as(GetNameResponseModel.class);
+
+        softly.assertThat(newUserName).isEqualTo(responseModelAfter.getName());
     }
 }
