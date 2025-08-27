@@ -35,6 +35,7 @@ public class ChangeNameTest extends BaseTest {
         GetNameResponseModel responseModelAfter = new GetUserRequester(RequestSpecs.authAsUser(createdUser.getUsername(),
                 createdUser.getPassword()), ResponseSpecs.requestReturnsOK()).get().extract().as(GetNameResponseModel.class);
 
+        softly.assertThat(newUserName).isEqualTo(responseModel.getCustomer().getName());
         softly.assertThat(newUserName).isEqualTo(responseModelAfter.getName());
     }
 }
