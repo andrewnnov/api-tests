@@ -1,13 +1,18 @@
 package iteration1;
 
 import generators.RandomData;
+import generators.RandomModelGenerator;
 import models.CreateUserRequestModel;
+import models.CreateUserResponseModel;
 import models.LoginUserRequestModel;
 import models.UserRole;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import requests.AdminCreateUserRequester;
 import requests.LoginUserRequester;
+import requests.skelethon.Endpoint;
+import requests.skelethon.requesters.CrudRequester;
+import requests.skelethon.requesters.ValidatedCrudRequester;
 import specs.RequestSpecs;
 import specs.ResponseSpecs;
 
@@ -21,7 +26,8 @@ public class LoginUserTest extends BaseTest {
                 .password("admin")
                 .build();
 
-        new LoginUserRequester(RequestSpecs.unauthSpec(),
+        new ValidatedCrudRequester<CreateUserResponseModel>(RequestSpecs.unauthSpec(),
+                Endpoint.LOGIN,
                 ResponseSpecs.requestReturnsOK())
                 .post(loginUserRequestModel);
     }
@@ -29,18 +35,16 @@ public class LoginUserTest extends BaseTest {
     @Test
     public void userCanGenerateAuthTokenTest() {
 
-        CreateUserRequestModel createUserRequestModel = CreateUserRequestModel.builder()
-                .username(RandomData.getUserName())
-                .password(RandomData.getPassword())
-                .role(UserRole.USER.toString())
-                .build();
+        CreateUserRequestModel createUserRequestModel = RandomModelGenerator.generate(CreateUserRequestModel.class);
 
         //create user
-        new AdminCreateUserRequester(RequestSpecs.adminSpec(),
+        new ValidatedCrudRequester<CreateUserResponseModel>(RequestSpecs.adminSpec(),
+                Endpoint.ADMIN_USER,
                 ResponseSpecs.entityWasCreated())
                 .post(createUserRequestModel);
 
-        new LoginUserRequester(RequestSpecs.unauthSpec(),
+        new CrudRequester(RequestSpecs.unauthSpec(),
+                Endpoint.LOGIN,
                 ResponseSpecs.requestReturnsOK())
                 .post(LoginUserRequestModel.builder()
                         .username(createUserRequestModel.getUsername())
