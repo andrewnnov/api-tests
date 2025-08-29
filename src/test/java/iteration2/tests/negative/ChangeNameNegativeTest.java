@@ -7,8 +7,9 @@ import models.ChangeNameResponseModel;
 import models.CreateUserRequestModel;
 import models.UserRole;
 import org.junit.jupiter.api.Test;
-import requests.AdminCreateUserRequester;
 import requests.ChangeNameRequester;
+import requests.skelethon.Endpoint;
+import requests.skelethon.requesters.CrudRequester;
 import specs.RequestSpecs;
 import specs.ResponseSpecs;
 
@@ -23,7 +24,9 @@ public class ChangeNameNegativeTest extends BaseTest {
                 .role(UserRole.USER.toString())
                 .build();
 
-        new AdminCreateUserRequester(RequestSpecs.adminSpec(), ResponseSpecs.entityWasCreated())
+        new CrudRequester(RequestSpecs.adminSpec(),
+                Endpoint.ADMIN_USER,
+                ResponseSpecs.entityWasCreated())
                 .post(createdUser);
 
         ChangeNameRequestModel changeName = ChangeNameRequestModel.builder()
@@ -47,7 +50,9 @@ public class ChangeNameNegativeTest extends BaseTest {
                 .role(UserRole.USER.toString())
                 .build();
 
-        new AdminCreateUserRequester(RequestSpecs.adminSpec(), ResponseSpecs.entityWasCreated())
+        new CrudRequester(RequestSpecs.adminSpec(),
+                Endpoint.ADMIN_USER,
+                ResponseSpecs.entityWasCreated())
                 .post(createdUser);
 
         ChangeNameRequestModel changeName = ChangeNameRequestModel.builder()

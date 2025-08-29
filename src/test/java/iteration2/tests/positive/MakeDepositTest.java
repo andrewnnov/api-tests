@@ -9,9 +9,8 @@ import models.MakeDepositRequestModel;
 import models.MakeDepositResponseModel;
 import models.UserRole;
 import org.junit.jupiter.api.Test;
-import requests.AdminCreateUserRequester;
-import requests.CreateAccountRequester;
-import requests.CreateDepositRequester;
+import requests.skelethon.Endpoint;
+import requests.skelethon.requesters.CrudRequester;
 import specs.RequestSpecs;
 import specs.ResponseSpecs;
 
@@ -27,12 +26,15 @@ public class MakeDepositTest extends BaseTest {
                 .build();
 
         //creating user by admin
-        new AdminCreateUserRequester(RequestSpecs.adminSpec(), ResponseSpecs.entityWasCreated())
+        new CrudRequester(RequestSpecs.adminSpec(),
+                Endpoint.ADMIN_USER,
+                ResponseSpecs.entityWasCreated())
                 .post(createdUser);
 
         //creating account
-        ValidatableResponse createAccountResponse = new CreateAccountRequester(RequestSpecs
+        ValidatableResponse createAccountResponse = new CrudRequester(RequestSpecs
                 .authAsUser(createdUser.getUsername(), createdUser.getPassword()),
+                Endpoint.ACCOUNTS,
                 ResponseSpecs.entityWasCreated())
                 .post(null);
 
@@ -49,8 +51,9 @@ public class MakeDepositTest extends BaseTest {
                 createdUser.getPassword(), accountId);
 
         //make deposit
-        MakeDepositResponseModel responseModel = new CreateDepositRequester(RequestSpecs
+        MakeDepositResponseModel responseModel = new CrudRequester(RequestSpecs
                 .depositAsAuthUser(createdUser.getUsername(), createdUser.getPassword()),
+                Endpoint.DEPOSIT,
                 ResponseSpecs.requestReturnsOK())
                 .post(makeDeposit).extract().as(MakeDepositResponseModel.class);
 

@@ -15,7 +15,7 @@ public class GetAccountRequester extends GetRequest{
     public ValidatableResponse get() {
         return given()
                 .spec(requestSpecification)
-                .get("/api/v1/customer/accounts")
+                .get("/customer/accounts")
                 .then()
                 .assertThat()
                 .spec(responseSpecification);

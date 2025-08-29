@@ -9,9 +9,8 @@ import models.MakeDepositRequestModel;
 import models.MakeDepositResponseModel;
 import models.UserRole;
 import org.junit.jupiter.api.Test;
-import requests.AdminCreateUserRequester;
-import requests.CreateAccountRequester;
-import requests.CreateDepositRequester;
+import requests.skelethon.Endpoint;
+import requests.skelethon.requesters.CrudRequester;
 import specs.RequestSpecs;
 import specs.ResponseSpecs;
 
@@ -33,21 +32,27 @@ public class MakeDepositNegativeTest extends BaseTest {
                 .role(UserRole.USER.toString())
                 .build();
 
-        new AdminCreateUserRequester(RequestSpecs.adminSpec(), ResponseSpecs.entityWasCreated())
+        new CrudRequester(RequestSpecs.adminSpec(),
+                Endpoint.ADMIN_USER,
+                ResponseSpecs.entityWasCreated())
                 .post(createdUser1);
 
-        new AdminCreateUserRequester(RequestSpecs.adminSpec(), ResponseSpecs.entityWasCreated())
+        new CrudRequester(RequestSpecs.adminSpec(),
+                Endpoint.ADMIN_USER,
+                ResponseSpecs.entityWasCreated())
                 .post(createdUser2);
 
-        ValidatableResponse createAccountResponse1 = new CreateAccountRequester(
+        ValidatableResponse createAccountResponse1 = new CrudRequester(
                 RequestSpecs.authAsUser(createdUser1.getUsername(), createdUser1.getPassword()),
+                Endpoint.ACCOUNTS,
                 ResponseSpecs.entityWasCreated())
                 .post(null);
 
         long accountIdOne = ((Integer) createAccountResponse1.extract().path("id")).longValue();
 
-        ValidatableResponse createAccountResponse2 = new CreateAccountRequester(
+        ValidatableResponse createAccountResponse2 = new CrudRequester(
                 RequestSpecs.authAsUser(createdUser2.getUsername(), createdUser2.getPassword()),
+                Endpoint.ACCOUNTS,
                 ResponseSpecs.entityWasCreated())
                 .post(null);
 
@@ -61,9 +66,10 @@ public class MakeDepositNegativeTest extends BaseTest {
         double senderAccountBalanceBefore = AccountBalanceUtils.getBalanceForAccount(createdUser1.getUsername(),
                 createdUser1.getPassword(), accountIdOne);
 
-        new CreateDepositRequester(RequestSpecs.depositAsAuthUser(
+        new CrudRequester(RequestSpecs.depositAsAuthUser(
                 createdUser1.getUsername(),
                 createdUser1.getPassword()),
+                Endpoint.DEPOSIT,
                 ResponseSpecs.requestReturnsForbidden("Unauthorized access to account"))
                 .post(makeDeposit);
 
@@ -83,11 +89,14 @@ public class MakeDepositNegativeTest extends BaseTest {
                 .role(UserRole.USER.toString())
                 .build();
 
-        new AdminCreateUserRequester(RequestSpecs.adminSpec(), ResponseSpecs.entityWasCreated())
+        new CrudRequester(RequestSpecs.adminSpec(),
+                Endpoint.ADMIN_USER,
+                ResponseSpecs.entityWasCreated())
                 .post(createdUser1);
 
-        ValidatableResponse createAccountResponse1 = new CreateAccountRequester(
+        ValidatableResponse createAccountResponse1 = new CrudRequester(
                 RequestSpecs.authAsUser(createdUser1.getUsername(), createdUser1.getPassword()),
+                Endpoint.ACCOUNTS,
                 ResponseSpecs.entityWasCreated())
                 .post(null);
 
@@ -101,9 +110,10 @@ public class MakeDepositNegativeTest extends BaseTest {
         double senderAccountBalanceBefore = AccountBalanceUtils.getBalanceForAccount(createdUser1.getUsername(),
                 createdUser1.getPassword(), accountIdOne);
 
-        new CreateDepositRequester(RequestSpecs.depositAsAuthUser(
+        new CrudRequester(RequestSpecs.depositAsAuthUser(
                 createdUser1.getUsername(),
                 createdUser1.getPassword()),
+                Endpoint.DEPOSIT,
                 ResponseSpecs.requestReturnsForbidden("Unauthorized access to account"))
                 .post(makeDeposit);
 
@@ -125,12 +135,15 @@ public class MakeDepositNegativeTest extends BaseTest {
                 .build();
 
         //creating user by admin
-        new AdminCreateUserRequester(RequestSpecs.adminSpec(), ResponseSpecs.entityWasCreated())
+        new CrudRequester(RequestSpecs.adminSpec(),
+                Endpoint.ADMIN_USER,
+                ResponseSpecs.entityWasCreated())
                 .post(createdUser);
 
         //creating account
-        ValidatableResponse createAccountResponse = new CreateAccountRequester(RequestSpecs
+        ValidatableResponse createAccountResponse = new CrudRequester(RequestSpecs
                 .authAsUser(createdUser.getUsername(), createdUser.getPassword()),
+                Endpoint.ACCOUNTS,
                 ResponseSpecs.entityWasCreated())
                 .post(null);
 
@@ -146,15 +159,15 @@ public class MakeDepositNegativeTest extends BaseTest {
                 createdUser.getPassword(), accountId);
 
         //make deposit
-         new CreateDepositRequester(RequestSpecs
+         new CrudRequester(RequestSpecs
                 .depositAsAuthUser(createdUser.getUsername(), createdUser.getPassword()),
+                Endpoint.DEPOSIT,
                 ResponseSpecs.requestReturnsBadRequest("Invalid account or amount"))
                 .post(makeDeposit);
 
         double senderAccountBalanceAfter = AccountBalanceUtils.getBalanceForAccount(createdUser.getUsername(),
                 createdUser.getPassword(), accountId);
     }
-
 
     @Test
     public void userCannotMakeZeroDeposit() {
@@ -165,12 +178,15 @@ public class MakeDepositNegativeTest extends BaseTest {
                 .build();
 
         //creating user by admin
-        new AdminCreateUserRequester(RequestSpecs.adminSpec(), ResponseSpecs.entityWasCreated())
+        new CrudRequester(RequestSpecs.adminSpec(),
+                Endpoint.ADMIN_USER,
+                ResponseSpecs.entityWasCreated())
                 .post(createdUser);
 
         //creating account
-        ValidatableResponse createAccountResponse = new CreateAccountRequester(RequestSpecs
+        ValidatableResponse createAccountResponse = new CrudRequester(RequestSpecs
                 .authAsUser(createdUser.getUsername(), createdUser.getPassword()),
+                Endpoint.ACCOUNTS,
                 ResponseSpecs.entityWasCreated())
                 .post(null);
 
@@ -186,8 +202,9 @@ public class MakeDepositNegativeTest extends BaseTest {
                 createdUser.getPassword(), accountId);
 
         //make deposit
-        new CreateDepositRequester(RequestSpecs
+        new CrudRequester(RequestSpecs
                 .depositAsAuthUser(createdUser.getUsername(), createdUser.getPassword()),
+                Endpoint.DEPOSIT,
                 ResponseSpecs.requestReturnsBadRequest("Invalid account or amount"))
                 .post(makeDeposit);
 

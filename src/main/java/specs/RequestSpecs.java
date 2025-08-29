@@ -6,7 +6,8 @@ import io.restassured.filter.log.ResponseLoggingFilter;
 import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
 import models.LoginUserRequestModel;
-import requests.LoginUserRequester;
+import requests.skelethon.Endpoint;
+import requests.skelethon.requesters.CrudRequester;
 
 import java.util.List;
 
@@ -20,7 +21,7 @@ public class RequestSpecs {
                 .addFilters(List.of(
                         new RequestLoggingFilter(),
                         new ResponseLoggingFilter()))
-                .setBaseUri("http://localhost:4111");
+                .setBaseUri("http://localhost:4111/api/v1");
     }
 
     public static RequestSpecification unauthSpec() {
@@ -34,7 +35,8 @@ public class RequestSpecs {
     }
 
     public static RequestSpecification authAsUser(String username, String password) {
-        String userAuthHeader = new LoginUserRequester(RequestSpecs.unauthSpec(),
+        String userAuthHeader = new CrudRequester(RequestSpecs.unauthSpec(),
+                Endpoint.LOGIN,
                 ResponseSpecs.requestReturnsOK())
                 .post(LoginUserRequestModel.builder()
                         .username(username)

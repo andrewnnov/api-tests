@@ -15,7 +15,7 @@ public class GetUserRequester extends GetRequest{
     public ValidatableResponse get() {
         return given()
                 .spec(requestSpecification)
-                .get("/api/v1/customer/profile")
+                .get("/customer/profile")
                 .then()
                 .assertThat()
                 .spec(responseSpecification);

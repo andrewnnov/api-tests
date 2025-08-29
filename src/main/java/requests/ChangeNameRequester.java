@@ -17,7 +17,7 @@ public class ChangeNameRequester extends PutRequest {
         return given()
                 .spec(requestSpecification)
                 .body(model)
-                .put("/api/v1/customer/profile")
+                .put("/customer/profile")
                 .then()
                 .assertThat()
                 .spec(responseSpecification);

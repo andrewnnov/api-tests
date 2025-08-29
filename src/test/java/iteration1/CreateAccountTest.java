@@ -4,8 +4,8 @@ import generators.RandomData;
 import models.CreateUserRequestModel;
 import models.UserRole;
 import org.junit.jupiter.api.Test;
-import requests.AdminCreateUserRequester;
-import requests.CreateAccountRequester;
+import requests.skelethon.Endpoint;
+import requests.skelethon.requesters.CrudRequester;
 import specs.RequestSpecs;
 import specs.ResponseSpecs;
 
@@ -20,12 +20,15 @@ public class CreateAccountTest extends BaseTest {
                 .role(UserRole.USER.toString())
                 .build();
 
-        new AdminCreateUserRequester(RequestSpecs.adminSpec(),
+        new CrudRequester(RequestSpecs.adminSpec(),
+                Endpoint.ADMIN_USER,
                 ResponseSpecs.entityWasCreated())
                 .post(createUserRequestModel);
 
-        new CreateAccountRequester(RequestSpecs.authAsUser(createUserRequestModel.getUsername(),
-                createUserRequestModel.getPassword()), ResponseSpecs.entityWasCreated())
+        new CrudRequester(RequestSpecs.authAsUser(createUserRequestModel.getUsername(),
+                createUserRequestModel.getPassword()),
+                Endpoint.ACCOUNTS,
+                ResponseSpecs.entityWasCreated())
                 .post(null);
 
         //check all users account and make sure that created account has in that list
