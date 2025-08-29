@@ -7,9 +7,9 @@ import models.ChangeNameResponseModel;
 import models.CreateUserRequestModel;
 import models.UserRole;
 import org.junit.jupiter.api.Test;
-import requests.ChangeNameRequester;
 import requests.skelethon.Endpoint;
 import requests.skelethon.requesters.CrudRequester;
+import requests.skelethon.requesters.ValidatedCrudRequester;
 import specs.RequestSpecs;
 import specs.ResponseSpecs;
 
@@ -32,9 +32,11 @@ public class ChangeNameNegativeTest extends BaseTest {
         ChangeNameRequestModel changeName = ChangeNameRequestModel.builder()
                 .name(newUserName).build();
 
-        ChangeNameResponseModel responseModel = new ChangeNameRequester(RequestSpecs.authAsUser(createdUser.getUsername(),
-                createdUser.getPassword()), ResponseSpecs.requestReturnOK("Profile updated successfully"))
-                .put(changeName).extract().as(ChangeNameResponseModel.class);
+        ChangeNameResponseModel responseModel = new ValidatedCrudRequester<ChangeNameResponseModel>(
+                RequestSpecs.authAsUser(createdUser.getUsername(), createdUser.getPassword()),
+                Endpoint.CHANGE_NAME,
+                ResponseSpecs.requestReturnOK("Profile updated successfully"))
+                .update(changeName);
 
         softly.assertThat(newUserName).isEqualTo(responseModel.getCustomer().getName());
     }
@@ -58,9 +60,11 @@ public class ChangeNameNegativeTest extends BaseTest {
         ChangeNameRequestModel changeName = ChangeNameRequestModel.builder()
                 .name(newUserName).build();
 
-        ChangeNameResponseModel responseModel = new ChangeNameRequester(RequestSpecs.authAsUser(createdUser.getUsername(),
-                createdUser.getPassword()), ResponseSpecs.requestReturnOK("Profile updated successfully"))
-                .put(changeName).extract().as(ChangeNameResponseModel.class);
+        ChangeNameResponseModel responseModel = new ValidatedCrudRequester<ChangeNameResponseModel>(
+                RequestSpecs.authAsUser(createdUser.getUsername(), createdUser.getPassword()),
+                Endpoint.CHANGE_NAME,
+                ResponseSpecs.requestReturnOK("Profile updated successfully"))
+                .update(changeName);
 
         softly.assertThat(newUserName).isEqualTo(responseModel.getCustomer().getName());
     }

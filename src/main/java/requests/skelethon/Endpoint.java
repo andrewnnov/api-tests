@@ -37,7 +37,14 @@ public enum Endpoint {
             MakeTransferRequestModel.class,
             MakeTransferResponseModel.class
 
+    ),
+
+    CHANGE_NAME (
+            "/customer/profile",
+            ChangeNameRequestModel.class,
+            ChangeNameResponseModel.class
     );
+
 
     private final String url;
     private final Class<? extends BaseModel> requestModel;
