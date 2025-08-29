@@ -1,6 +1,7 @@
 package iteration2.tests.negative;
 
 import generators.RandomData;
+import generators.RandomModelGenerator;
 import iteration1.BaseTest;
 import models.ChangeNameRequestModel;
 import models.ChangeNameResponseModel;
@@ -18,11 +19,7 @@ public class ChangeNameNegativeTest extends BaseTest {
     @Test
     public void authUserCanNotUpdateOwnNameWithBlancValue() {
         String newUserName = "   ";
-        CreateUserRequestModel createdUser = CreateUserRequestModel.builder()
-                .username(RandomData.getUserName())
-                .password(RandomData.getPassword())
-                .role(UserRole.USER.toString())
-                .build();
+        CreateUserRequestModel createdUser = RandomModelGenerator.generate(CreateUserRequestModel.class);
 
         new CrudRequester(RequestSpecs.adminSpec(),
                 Endpoint.ADMIN_USER,
@@ -46,11 +43,7 @@ public class ChangeNameNegativeTest extends BaseTest {
     public void userCannotInjectJavaScriptInNameField() {
         String newUserName = "<script>alert('XSS')</script>";
 
-        CreateUserRequestModel createdUser = CreateUserRequestModel.builder()
-                .username(RandomData.getUserName())
-                .password(RandomData.getPassword())
-                .role(UserRole.USER.toString())
-                .build();
+        CreateUserRequestModel createdUser = RandomModelGenerator.generate(CreateUserRequestModel.class);
 
         new CrudRequester(RequestSpecs.adminSpec(),
                 Endpoint.ADMIN_USER,

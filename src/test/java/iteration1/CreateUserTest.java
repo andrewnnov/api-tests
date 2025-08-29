@@ -1,6 +1,7 @@
 package iteration1;
 
 import generators.RandomData;
+import generators.RandomModelGenerator;
 import models.CreateUserRequestModel;
 import models.CreateUserResponseModel;
 import models.UserRole;
@@ -22,10 +23,7 @@ public class CreateUserTest extends BaseTest {
     @Test
     public void adminCanCreateUserWithCorrectData() {
 
-        CreateUserRequestModel createUserRequestModel = CreateUserRequestModel.builder()
-                .username(RandomData.getUserName())
-                .password(RandomData.getPassword())
-                .role(UserRole.USER.toString()).build();
+        CreateUserRequestModel createUserRequestModel = RandomModelGenerator.generate(CreateUserRequestModel.class);
 
         CreateUserResponseModel createUserResponseModel = new ValidatedCrudRequester<CreateUserResponseModel>(
                 RequestSpecs.adminSpec(),

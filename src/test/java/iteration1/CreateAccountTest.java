@@ -1,6 +1,7 @@
 package iteration1;
 
 import generators.RandomData;
+import generators.RandomModelGenerator;
 import models.CreateUserRequestModel;
 import models.UserRole;
 import org.junit.jupiter.api.Test;
@@ -14,11 +15,7 @@ public class CreateAccountTest extends BaseTest {
     @Test
     public void userCanCreateAccountTest() {
         //create user
-        CreateUserRequestModel createUserRequestModel = CreateUserRequestModel.builder()
-                .username(RandomData.getUserName())
-                .password(RandomData.getPassword())
-                .role(UserRole.USER.toString())
-                .build();
+        CreateUserRequestModel createUserRequestModel = RandomModelGenerator.generate(CreateUserRequestModel.class);
 
         new CrudRequester(RequestSpecs.adminSpec(),
                 Endpoint.ADMIN_USER,

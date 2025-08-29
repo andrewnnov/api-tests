@@ -1,6 +1,7 @@
 package iteration2.tests.positive;
 
 import generators.RandomData;
+import generators.RandomModelGenerator;
 import helpers.AccountBalanceUtils;
 import io.restassured.response.ValidatableResponse;
 import iteration1.BaseTest;
@@ -18,11 +19,7 @@ public class MakeTransferTest extends BaseTest {
     public void authUserCanTransferMoneyToAnotherOwnAccount() {
 
         //creating model of user
-        CreateUserRequestModel createdUser = CreateUserRequestModel.builder()
-                .username(RandomData.getUserName())
-                .password(RandomData.getPassword())
-                .role(UserRole.USER.toString())
-                .build();
+        CreateUserRequestModel createdUser = RandomModelGenerator.generate(CreateUserRequestModel.class);
 
         //creating user by admin
         new CrudRequester(RequestSpecs.adminSpec(),
@@ -90,18 +87,10 @@ public class MakeTransferTest extends BaseTest {
     public void authUserCanTransferMoneyToAnotherUserAccount() {
 
         //creating model of user1
-        CreateUserRequestModel createdUser1 = CreateUserRequestModel.builder()
-                .username(RandomData.getUserName())
-                .password(RandomData.getPassword())
-                .role(UserRole.USER.toString())
-                .build();
+        CreateUserRequestModel createdUser1 = RandomModelGenerator.generate(CreateUserRequestModel.class);
 
         //creating model of user1
-        CreateUserRequestModel createdUser2 = CreateUserRequestModel.builder()
-                .username(RandomData.getUserName())
-                .password(RandomData.getPassword())
-                .role(UserRole.USER.toString())
-                .build();
+        CreateUserRequestModel createdUser2 = RandomModelGenerator.generate(CreateUserRequestModel.class);
 
         //creating user1 by admin
         new CrudRequester(RequestSpecs.adminSpec(),

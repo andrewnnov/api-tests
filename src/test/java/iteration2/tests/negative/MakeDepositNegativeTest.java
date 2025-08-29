@@ -1,6 +1,7 @@
 package iteration2.tests.negative;
 
 import generators.RandomData;
+import generators.RandomModelGenerator;
 import helpers.AccountBalanceUtils;
 import io.restassured.response.ValidatableResponse;
 import iteration1.BaseTest;
@@ -20,17 +21,9 @@ public class MakeDepositNegativeTest extends BaseTest {
     @Test
     public void userCannotDepositToAnotherUserAccount() {
 
-        CreateUserRequestModel createdUser1 = CreateUserRequestModel.builder()
-                .username(RandomData.getUserName())
-                .password(RandomData.getPassword())
-                .role(UserRole.USER.toString())
-                .build();
+        CreateUserRequestModel createdUser1 = RandomModelGenerator.generate(CreateUserRequestModel.class);
 
-        CreateUserRequestModel createdUser2 = CreateUserRequestModel.builder()
-                .username(RandomData.getUserName())
-                .password(RandomData.getPassword())
-                .role(UserRole.USER.toString())
-                .build();
+        CreateUserRequestModel createdUser2 = RandomModelGenerator.generate(CreateUserRequestModel.class);
 
         new CrudRequester(RequestSpecs.adminSpec(),
                 Endpoint.ADMIN_USER,
@@ -83,11 +76,7 @@ public class MakeDepositNegativeTest extends BaseTest {
     @Test
     public void userCannotDepositToNotExistingUserAccountId() {
 
-        CreateUserRequestModel createdUser1 = CreateUserRequestModel.builder()
-                .username(RandomData.getUserName())
-                .password(RandomData.getPassword())
-                .role(UserRole.USER.toString())
-                .build();
+        CreateUserRequestModel createdUser1 = RandomModelGenerator.generate(CreateUserRequestModel.class);
 
         new CrudRequester(RequestSpecs.adminSpec(),
                 Endpoint.ADMIN_USER,
@@ -128,11 +117,7 @@ public class MakeDepositNegativeTest extends BaseTest {
     public void userCannotMakeNegativeDeposit() {
 
         //creating model of user
-        CreateUserRequestModel createdUser = CreateUserRequestModel.builder()
-                .username(RandomData.getUserName())
-                .password(RandomData.getPassword())
-                .role(UserRole.USER.toString())
-                .build();
+        CreateUserRequestModel createdUser = RandomModelGenerator.generate(CreateUserRequestModel.class);
 
         //creating user by admin
         new CrudRequester(RequestSpecs.adminSpec(),
@@ -171,11 +156,7 @@ public class MakeDepositNegativeTest extends BaseTest {
 
     @Test
     public void userCannotMakeZeroDeposit() {
-        CreateUserRequestModel createdUser = CreateUserRequestModel.builder()
-                .username(RandomData.getUserName())
-                .password(RandomData.getPassword())
-                .role(UserRole.USER.toString())
-                .build();
+        CreateUserRequestModel createdUser = RandomModelGenerator.generate(CreateUserRequestModel.class);
 
         //creating user by admin
         new CrudRequester(RequestSpecs.adminSpec(),

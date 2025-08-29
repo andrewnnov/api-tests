@@ -1,6 +1,7 @@
 package iteration2.tests.positive;
 
 import generators.RandomData;
+import generators.RandomModelGenerator;
 import iteration1.BaseTest;
 import models.*;
 import org.junit.jupiter.api.Test;
@@ -16,11 +17,7 @@ public class ChangeNameTest extends BaseTest {
     @Test
     public void authUserCanUpdateOwnName() {
 
-        CreateUserRequestModel createdUser = CreateUserRequestModel.builder()
-                .username(RandomData.getUserName())
-                .password(RandomData.getPassword())
-                .role(UserRole.USER.toString())
-                .build();
+        CreateUserRequestModel createdUser = RandomModelGenerator.generate(CreateUserRequestModel.class);
 
         new CrudRequester(RequestSpecs.adminSpec(),
                 Endpoint.ADMIN_USER,

@@ -1,6 +1,7 @@
 package iteration2.tests.negative;
 
 import generators.RandomData;
+import generators.RandomModelGenerator;
 import helpers.AccountBalanceUtils;
 import io.restassured.response.ValidatableResponse;
 import iteration1.BaseTest;
@@ -19,11 +20,7 @@ public class MakeTransferNegativeTest extends BaseTest {
     public void authUserCanNotTransferMoneyToOwnAccountMoreThatAccountHas() {
 
         //creating model of user
-        CreateUserRequestModel createdUser = CreateUserRequestModel.builder()
-                .username(RandomData.getUserName())
-                .password(RandomData.getPassword())
-                .role(UserRole.USER.toString())
-                .build();
+        CreateUserRequestModel createdUser = RandomModelGenerator.generate(CreateUserRequestModel.class);
 
         //creating user by admin
         new CrudRequester(RequestSpecs.adminSpec(),
@@ -87,11 +84,7 @@ public class MakeTransferNegativeTest extends BaseTest {
     @Test
     public void authUserCanNotTransferMoneyToOwnAccountNegativeAmount() {
         //creating model of user
-        CreateUserRequestModel createdUser = CreateUserRequestModel.builder()
-                .username(RandomData.getUserName())
-                .password(RandomData.getPassword())
-                .role(UserRole.USER.toString())
-                .build();
+        CreateUserRequestModel createdUser = RandomModelGenerator.generate(CreateUserRequestModel.class);
 
         //creating user by admin
         new CrudRequester(RequestSpecs.adminSpec(),
@@ -158,11 +151,7 @@ public class MakeTransferNegativeTest extends BaseTest {
     public void authUserCanNotTransferMoneyToNotExistingAccount() {
 
         //creating model of user
-        CreateUserRequestModel createdUser = CreateUserRequestModel.builder()
-                .username(RandomData.getUserName())
-                .password(RandomData.getPassword())
-                .role(UserRole.USER.toString())
-                .build();
+        CreateUserRequestModel createdUser = RandomModelGenerator.generate(CreateUserRequestModel.class);
 
         //creating user by admin
         new CrudRequester(RequestSpecs.adminSpec(),
@@ -217,11 +206,7 @@ public class MakeTransferNegativeTest extends BaseTest {
     @Test
     public void transferFromOtherAccountShouldBeForbidden() {
         //creating model of user1
-        CreateUserRequestModel createdUser1 = CreateUserRequestModel.builder()
-                .username(RandomData.getUserName())
-                .password(RandomData.getPassword())
-                .role(UserRole.USER.toString())
-                .build();
+        CreateUserRequestModel createdUser1 = RandomModelGenerator.generate(CreateUserRequestModel.class);
 
         //creating model of user1
         CreateUserRequestModel createdUser2 = CreateUserRequestModel.builder()

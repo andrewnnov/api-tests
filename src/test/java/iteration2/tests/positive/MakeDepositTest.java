@@ -1,6 +1,7 @@
 package iteration2.tests.positive;
 
 import generators.RandomData;
+import generators.RandomModelGenerator;
 import helpers.AccountBalanceUtils;
 import io.restassured.response.ValidatableResponse;
 import iteration1.BaseTest;
@@ -19,11 +20,7 @@ public class MakeDepositTest extends BaseTest {
     @Test
     public void authUserCanDepositMoneyWithValidAmount() {
         //creating model of user
-        CreateUserRequestModel createdUser = CreateUserRequestModel.builder()
-                .username(RandomData.getUserName())
-                .password(RandomData.getPassword())
-                .role(UserRole.USER.toString())
-                .build();
+        CreateUserRequestModel createdUser = RandomModelGenerator.generate(CreateUserRequestModel.class);
 
         //creating user by admin
         new CrudRequester(RequestSpecs.adminSpec(),
