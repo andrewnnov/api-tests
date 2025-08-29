@@ -43,6 +43,18 @@ public enum Endpoint {
             "/customer/profile",
             ChangeNameRequestModel.class,
             ChangeNameResponseModel.class
+    ),
+
+    GET_USER (
+            "/customer/profile",
+            BaseModel.class,
+            GetUserResponseModel.class
+    ),
+
+    GET_ACCOUNT (
+            "/customer/accounts",
+            BaseModel.class,
+            MakeDepositResponseModel.class
     );
 
 

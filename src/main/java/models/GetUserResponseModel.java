@@ -11,7 +11,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class GetNameResponseModel {
+public class GetUserResponseModel extends BaseModel {
     private long id;
     private String username;
     private String password;

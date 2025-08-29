@@ -1,7 +1,8 @@
 package helpers;
 
 import models.MakeDepositResponseModel;
-import requests.GetAccountRequester;
+import requests.skelethon.Endpoint;
+import requests.skelethon.requesters.CrudRequester;
 import specs.RequestSpecs;
 import specs.ResponseSpecs;
 
@@ -10,8 +11,9 @@ import java.util.Arrays;
 public class AccountBalanceUtils {
 
     public static double getBalanceForAccount(String username, String password, long accountId) {
-        MakeDepositResponseModel[] accounts = new GetAccountRequester(
+        MakeDepositResponseModel[] accounts = new CrudRequester(
                 RequestSpecs.authAsUser(username, password),
+                Endpoint.GET_ACCOUNT,
                 ResponseSpecs.requestReturnsOK()
         ).get()
                 .extract()

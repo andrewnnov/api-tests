@@ -4,7 +4,6 @@ import generators.RandomData;
 import iteration1.BaseTest;
 import models.*;
 import org.junit.jupiter.api.Test;
-import requests.GetUserRequester;
 import requests.skelethon.Endpoint;
 import requests.skelethon.requesters.CrudRequester;
 import requests.skelethon.requesters.ValidatedCrudRequester;
@@ -38,8 +37,10 @@ public class ChangeNameTest extends BaseTest {
                 ResponseSpecs.requestReturnOK("Profile updated successfully"))
                 .update(changeName);
 
-        GetNameResponseModel responseModelAfter = new GetUserRequester(RequestSpecs.authAsUser(createdUser.getUsername(),
-                createdUser.getPassword()), ResponseSpecs.requestReturnsOK()).get().extract().as(GetNameResponseModel.class);
+        GetUserResponseModel responseModelAfter = (GetUserResponseModel) new ValidatedCrudRequester<GetUserResponseModel>(
+                RequestSpecs.authAsUser(createdUser.getUsername(), createdUser.getPassword()),
+                Endpoint.GET_USER,
+                ResponseSpecs.requestReturnsOK()).get();
 
         softly.assertThat(newUserName).isEqualTo(responseModel.getCustomer().getName());
         softly.assertThat(newUserName).isEqualTo(responseModelAfter.getName());
