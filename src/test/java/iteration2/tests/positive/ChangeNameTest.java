@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import requests.skelethon.Endpoint;
 import requests.skelethon.requesters.CrudRequester;
 import requests.skelethon.requesters.ValidatedCrudRequester;
+import requests.steps.AdminSteps;
 import specs.RequestSpecs;
 import specs.ResponseSpecs;
 
@@ -19,10 +20,7 @@ public class ChangeNameTest extends BaseTest {
 
         CreateUserRequestModel createdUser = RandomModelGenerator.generate(CreateUserRequestModel.class);
 
-        new CrudRequester(RequestSpecs.adminSpec(),
-                Endpoint.ADMIN_USER,
-                ResponseSpecs.entityWasCreated())
-                .post(createdUser);
+        AdminSteps.createUser(createdUser);
 
         ChangeNameRequestModel changeName = ChangeNameRequestModel.builder()
                 .name(newUserName).build();

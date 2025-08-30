@@ -2,11 +2,15 @@ package iteration1;
 
 import generators.RandomData;
 import generators.RandomModelGenerator;
+import models.CreateAccountResponseModel;
 import models.CreateUserRequestModel;
+import models.CreateUserResponseModel;
 import models.UserRole;
 import org.junit.jupiter.api.Test;
 import requests.skelethon.Endpoint;
 import requests.skelethon.requesters.CrudRequester;
+import requests.steps.AdminSteps;
+import requests.steps.UserSteps;
 import specs.RequestSpecs;
 import specs.ResponseSpecs;
 
@@ -17,17 +21,10 @@ public class CreateAccountTest extends BaseTest {
         //create user
         CreateUserRequestModel createUserRequestModel =
                 RandomModelGenerator.generate(CreateUserRequestModel.class);
+        CreateUserResponseModel createUserResponseModel = AdminSteps.createUser(createUserRequestModel);
+        UserSteps.createAccount(createUserRequestModel);
 
-        new CrudRequester(RequestSpecs.adminSpec(),
-                Endpoint.ADMIN_USER,
-                ResponseSpecs.entityWasCreated())
-                .post(createUserRequestModel);
-
-        new CrudRequester(RequestSpecs.authAsUser(createUserRequestModel.getUsername(),
-                createUserRequestModel.getPassword()),
-                Endpoint.ACCOUNTS,
-                ResponseSpecs.entityWasCreated())
-                .post(null);
+        //TODO create check account
 
         //check all users account and make sure that created account has in that list
     }

@@ -12,6 +12,8 @@ import models.UserRole;
 import org.junit.jupiter.api.Test;
 import requests.skelethon.Endpoint;
 import requests.skelethon.requesters.CrudRequester;
+import requests.steps.AdminSteps;
+import requests.steps.UserSteps;
 import specs.RequestSpecs;
 import specs.ResponseSpecs;
 
@@ -25,29 +27,15 @@ public class MakeDepositNegativeTest extends BaseTest {
 
         CreateUserRequestModel createdUser2 = RandomModelGenerator.generate(CreateUserRequestModel.class);
 
-        new CrudRequester(RequestSpecs.adminSpec(),
-                Endpoint.ADMIN_USER,
-                ResponseSpecs.entityWasCreated())
-                .post(createdUser1);
+        AdminSteps.createUser(createdUser1);
 
-        new CrudRequester(RequestSpecs.adminSpec(),
-                Endpoint.ADMIN_USER,
-                ResponseSpecs.entityWasCreated())
-                .post(createdUser2);
+        AdminSteps.createUser(createdUser2);
 
-        ValidatableResponse createAccountResponse1 = new CrudRequester(
-                RequestSpecs.authAsUser(createdUser1.getUsername(), createdUser1.getPassword()),
-                Endpoint.ACCOUNTS,
-                ResponseSpecs.entityWasCreated())
-                .post(null);
+        ValidatableResponse createAccountResponse1 = UserSteps.createAccount(createdUser1);
 
         long accountIdOne = ((Integer) createAccountResponse1.extract().path("id")).longValue();
 
-        ValidatableResponse createAccountResponse2 = new CrudRequester(
-                RequestSpecs.authAsUser(createdUser2.getUsername(), createdUser2.getPassword()),
-                Endpoint.ACCOUNTS,
-                ResponseSpecs.entityWasCreated())
-                .post(null);
+        ValidatableResponse createAccountResponse2 = UserSteps.createAccount(createdUser2);
 
         long accountIdTwo = ((Integer) createAccountResponse2.extract().path("id")).longValue();
 
@@ -78,16 +66,9 @@ public class MakeDepositNegativeTest extends BaseTest {
 
         CreateUserRequestModel createdUser1 = RandomModelGenerator.generate(CreateUserRequestModel.class);
 
-        new CrudRequester(RequestSpecs.adminSpec(),
-                Endpoint.ADMIN_USER,
-                ResponseSpecs.entityWasCreated())
-                .post(createdUser1);
+        AdminSteps.createUser(createdUser1);
 
-        ValidatableResponse createAccountResponse1 = new CrudRequester(
-                RequestSpecs.authAsUser(createdUser1.getUsername(), createdUser1.getPassword()),
-                Endpoint.ACCOUNTS,
-                ResponseSpecs.entityWasCreated())
-                .post(null);
+        ValidatableResponse createAccountResponse1 = UserSteps.createAccount(createdUser1);
 
         long accountIdOne = ((Integer) createAccountResponse1.extract().path("id")).longValue();
 
@@ -120,17 +101,10 @@ public class MakeDepositNegativeTest extends BaseTest {
         CreateUserRequestModel createdUser = RandomModelGenerator.generate(CreateUserRequestModel.class);
 
         //creating user by admin
-        new CrudRequester(RequestSpecs.adminSpec(),
-                Endpoint.ADMIN_USER,
-                ResponseSpecs.entityWasCreated())
-                .post(createdUser);
+        AdminSteps.createUser(createdUser);
 
         //creating account
-        ValidatableResponse createAccountResponse = new CrudRequester(RequestSpecs
-                .authAsUser(createdUser.getUsername(), createdUser.getPassword()),
-                Endpoint.ACCOUNTS,
-                ResponseSpecs.entityWasCreated())
-                .post(null);
+        ValidatableResponse createAccountResponse = UserSteps.createAccount(createdUser);
 
         //get account id
         long accountId = ((Integer) createAccountResponse.extract().path("id")).longValue();
@@ -159,17 +133,10 @@ public class MakeDepositNegativeTest extends BaseTest {
         CreateUserRequestModel createdUser = RandomModelGenerator.generate(CreateUserRequestModel.class);
 
         //creating user by admin
-        new CrudRequester(RequestSpecs.adminSpec(),
-                Endpoint.ADMIN_USER,
-                ResponseSpecs.entityWasCreated())
-                .post(createdUser);
+        AdminSteps.createUser(createdUser);
 
         //creating account
-        ValidatableResponse createAccountResponse = new CrudRequester(RequestSpecs
-                .authAsUser(createdUser.getUsername(), createdUser.getPassword()),
-                Endpoint.ACCOUNTS,
-                ResponseSpecs.entityWasCreated())
-                .post(null);
+        ValidatableResponse createAccountResponse = UserSteps.createAccount(createdUser);
 
         //get account id
         long accountId = ((Integer) createAccountResponse.extract().path("id")).longValue();

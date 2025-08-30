@@ -12,6 +12,8 @@ import models.UserRole;
 import org.junit.jupiter.api.Test;
 import requests.skelethon.Endpoint;
 import requests.skelethon.requesters.CrudRequester;
+import requests.steps.AdminSteps;
+import requests.steps.UserSteps;
 import specs.RequestSpecs;
 import specs.ResponseSpecs;
 
@@ -23,17 +25,10 @@ public class MakeDepositTest extends BaseTest {
         CreateUserRequestModel createdUser = RandomModelGenerator.generate(CreateUserRequestModel.class);
 
         //creating user by admin
-        new CrudRequester(RequestSpecs.adminSpec(),
-                Endpoint.ADMIN_USER,
-                ResponseSpecs.entityWasCreated())
-                .post(createdUser);
+        AdminSteps.createUser(createdUser);
 
         //creating account
-        ValidatableResponse createAccountResponse = new CrudRequester(RequestSpecs
-                .authAsUser(createdUser.getUsername(), createdUser.getPassword()),
-                Endpoint.ACCOUNTS,
-                ResponseSpecs.entityWasCreated())
-                .post(null);
+        ValidatableResponse createAccountResponse = UserSteps.createAccount(createdUser);
 
         //get account id
         long accountId = ((Integer) createAccountResponse.extract().path("id")).longValue();
@@ -48,11 +43,7 @@ public class MakeDepositTest extends BaseTest {
                 createdUser.getPassword(), accountId);
 
         //make deposit
-        MakeDepositResponseModel responseModel = new CrudRequester(RequestSpecs
-                .depositAsAuthUser(createdUser.getUsername(), createdUser.getPassword()),
-                Endpoint.DEPOSIT,
-                ResponseSpecs.requestReturnsOK())
-                .post(makeDeposit).extract().as(MakeDepositResponseModel.class);
+        MakeDepositResponseModel responseModel = UserSteps.makeDeposit(createdUser, makeDeposit);
 
         //check balances of accounts after transaction
         double accountBalanceAfter = AccountBalanceUtils.getBalanceForAccount(createdUser.getUsername(),

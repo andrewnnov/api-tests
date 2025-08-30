@@ -10,6 +10,8 @@ import org.junit.jupiter.api.Test;
 import requests.skelethon.Endpoint;
 import requests.skelethon.requesters.CrudRequester;
 import requests.skelethon.requesters.ValidatedCrudRequester;
+import requests.steps.AdminSteps;
+import requests.steps.UserSteps;
 import specs.RequestSpecs;
 import specs.ResponseSpecs;
 
@@ -23,27 +25,16 @@ public class MakeTransferNegativeTest extends BaseTest {
         CreateUserRequestModel createdUser = RandomModelGenerator.generate(CreateUserRequestModel.class);
 
         //creating user by admin
-        new CrudRequester(RequestSpecs.adminSpec(),
-                Endpoint.ADMIN_USER,
-                ResponseSpecs.entityWasCreated())
-                .post(createdUser);
+        AdminSteps.createUser(createdUser);
 
         //creating account 1
-        ValidatableResponse createAccountResponseOne = new CrudRequester(RequestSpecs
-                .authAsUser(createdUser.getUsername(), createdUser.getPassword()),
-                Endpoint.ACCOUNTS,
-                ResponseSpecs.entityWasCreated())
-                .post(null);
+        ValidatableResponse createAccountResponseOne = UserSteps.createAccount(createdUser);
 
         //get account id
         long accountIdOne = ((Integer) createAccountResponseOne.extract().path("id")).longValue();
 
         //creating account 2
-        ValidatableResponse createAccountResponseTwo = new CrudRequester(RequestSpecs
-                .authAsUser(createdUser.getUsername(), createdUser.getPassword()),
-                Endpoint.ACCOUNTS,
-                ResponseSpecs.entityWasCreated())
-                .post(null);
+        ValidatableResponse createAccountResponseTwo = UserSteps.createAccount(createdUser);
 
         //get account id
         long accountIdTwo = ((Integer) createAccountResponseTwo.extract().path("id")).longValue();
@@ -52,11 +43,7 @@ public class MakeTransferNegativeTest extends BaseTest {
                 .id(accountIdOne)
                 .balance(100.00).build();
 
-        MakeDepositResponseModel responseModel = new ValidatedCrudRequester<MakeDepositResponseModel>(RequestSpecs
-                .depositAsAuthUser(createdUser.getUsername(), createdUser.getPassword()),
-                Endpoint.DEPOSIT,
-                ResponseSpecs.requestReturnsOK())
-                .post(makeDeposit);
+        MakeDepositResponseModel responseModel = UserSteps.makeDeposit(createdUser, makeDeposit);
 
         double senderAccountBalanceBefore = AccountBalanceUtils.getBalanceForAccount(createdUser.getUsername(),
                 createdUser.getPassword(), accountIdOne);
@@ -87,27 +74,16 @@ public class MakeTransferNegativeTest extends BaseTest {
         CreateUserRequestModel createdUser = RandomModelGenerator.generate(CreateUserRequestModel.class);
 
         //creating user by admin
-        new CrudRequester(RequestSpecs.adminSpec(),
-                Endpoint.ADMIN_USER,
-                ResponseSpecs.entityWasCreated())
-                .post(createdUser);
+        AdminSteps.createUser(createdUser);
 
         //creating account 1
-        ValidatableResponse createAccountResponseOne = new CrudRequester(RequestSpecs
-                .authAsUser(createdUser.getUsername(), createdUser.getPassword()),
-                Endpoint.ACCOUNTS,
-                ResponseSpecs.entityWasCreated())
-                .post(null);
+        ValidatableResponse createAccountResponseOne = UserSteps.createAccount(createdUser);
 
         //get account id
         long accountIdOne = ((Integer) createAccountResponseOne.extract().path("id")).longValue();
 
         //creating account 2
-        ValidatableResponse createAccountResponseTwo = new CrudRequester(RequestSpecs
-                .authAsUser(createdUser.getUsername(), createdUser.getPassword()),
-                Endpoint.ACCOUNTS,
-                ResponseSpecs.entityWasCreated())
-                .post(null);
+        ValidatableResponse createAccountResponseTwo = UserSteps.createAccount(createdUser);
 
         //get account id
         long accountIdTwo = ((Integer) createAccountResponseTwo.extract().path("id")).longValue();
@@ -116,11 +92,7 @@ public class MakeTransferNegativeTest extends BaseTest {
                 .id(accountIdOne)
                 .balance(100.00).build();
 
-        MakeDepositResponseModel responseModel = new ValidatedCrudRequester<MakeDepositResponseModel>(RequestSpecs
-                .depositAsAuthUser(createdUser.getUsername(), createdUser.getPassword()),
-                Endpoint.DEPOSIT,
-                ResponseSpecs.requestReturnsOK())
-                .post(makeDeposit);
+        MakeDepositResponseModel responseModel = UserSteps.makeDeposit(createdUser, makeDeposit);
 
         double senderAccountBalanceBefore = AccountBalanceUtils.getBalanceForAccount(createdUser.getUsername(),
                 createdUser.getPassword(), accountIdOne);
@@ -154,17 +126,10 @@ public class MakeTransferNegativeTest extends BaseTest {
         CreateUserRequestModel createdUser = RandomModelGenerator.generate(CreateUserRequestModel.class);
 
         //creating user by admin
-        new CrudRequester(RequestSpecs.adminSpec(),
-                Endpoint.ADMIN_USER,
-                ResponseSpecs.entityWasCreated())
-                .post(createdUser);
+        AdminSteps.createUser(createdUser);
 
         //creating account 1
-        ValidatableResponse createAccountResponseOne = new CrudRequester(RequestSpecs
-                .authAsUser(createdUser.getUsername(), createdUser.getPassword()),
-                Endpoint.ACCOUNTS,
-                ResponseSpecs.entityWasCreated())
-                .post(null);
+        ValidatableResponse createAccountResponseOne = UserSteps.createAccount(createdUser);
 
         //get account id
         long accountIdOne = ((Integer) createAccountResponseOne.extract().path("id")).longValue();
@@ -173,11 +138,7 @@ public class MakeTransferNegativeTest extends BaseTest {
                 .id(accountIdOne)
                 .balance(100.00).build();
 
-        MakeDepositResponseModel responseModel = new ValidatedCrudRequester<MakeDepositResponseModel>(RequestSpecs
-                .depositAsAuthUser(createdUser.getUsername(), createdUser.getPassword()),
-                Endpoint.DEPOSIT,
-                ResponseSpecs.requestReturnsOK())
-                .post(makeDeposit);
+        MakeDepositResponseModel responseModel = UserSteps.makeDeposit(createdUser, makeDeposit);
 
         double senderAccountBalanceBefore = AccountBalanceUtils.getBalanceForAccount(createdUser.getUsername(),
                 createdUser.getPassword(), accountIdOne);
@@ -209,40 +170,22 @@ public class MakeTransferNegativeTest extends BaseTest {
         CreateUserRequestModel createdUser1 = RandomModelGenerator.generate(CreateUserRequestModel.class);
 
         //creating model of user1
-        CreateUserRequestModel createdUser2 = CreateUserRequestModel.builder()
-                .username(RandomData.getUserName())
-                .password(RandomData.getPassword())
-                .role(UserRole.USER.toString())
-                .build();
+        CreateUserRequestModel createdUser2 = RandomModelGenerator.generate(CreateUserRequestModel.class);
 
         //creating user1 by admin
-        new CrudRequester(RequestSpecs.adminSpec(),
-                Endpoint.ADMIN_USER,
-                ResponseSpecs.entityWasCreated())
-                .post(createdUser1);
+       AdminSteps.createUser(createdUser1);
 
         //creating user2 by admin
-        new CrudRequester(RequestSpecs.adminSpec(),
-                Endpoint.ADMIN_USER,
-                ResponseSpecs.entityWasCreated())
-                .post(createdUser2);
+        AdminSteps.createUser(createdUser2);
 
         //creating account 1
-        ValidatableResponse createAccountResponseOne = new CrudRequester(RequestSpecs
-                .authAsUser(createdUser1.getUsername(), createdUser1.getPassword()),
-                Endpoint.ACCOUNTS,
-                ResponseSpecs.entityWasCreated())
-                .post(null);
+        ValidatableResponse createAccountResponseOne = UserSteps.createAccount(createdUser1);
 
         //get account 1 id
         long accountIdOne = ((Integer) createAccountResponseOne.extract().path("id")).longValue();
 
         //creating account 2
-        ValidatableResponse createAccountResponseTwo = new CrudRequester(RequestSpecs
-                .authAsUser(createdUser2.getUsername(), createdUser2.getPassword()),
-                Endpoint.ACCOUNTS,
-                ResponseSpecs.entityWasCreated())
-                .post(null);
+        ValidatableResponse createAccountResponseTwo = UserSteps.createAccount(createdUser2);
 
         //get account 2 id
         long accountIdTwo = ((Integer) createAccountResponseTwo.extract().path("id")).longValue();
@@ -253,11 +196,7 @@ public class MakeTransferNegativeTest extends BaseTest {
                 .balance(100.00).build();
 
         //make deposit
-        MakeDepositResponseModel responseModel = new ValidatedCrudRequester<MakeDepositResponseModel>(RequestSpecs
-                .depositAsAuthUser(createdUser1.getUsername(), createdUser1.getPassword()),
-                Endpoint.DEPOSIT,
-                ResponseSpecs.requestReturnsOK())
-                .post(makeDeposit);
+        MakeDepositResponseModel responseModel = UserSteps.makeDeposit(createdUser1, makeDeposit);
 
 
         //create transfer model

@@ -10,6 +10,8 @@ import org.junit.jupiter.api.Test;
 import requests.skelethon.Endpoint;
 import requests.skelethon.requesters.CrudRequester;
 import requests.skelethon.requesters.ValidatedCrudRequester;
+import requests.steps.AdminSteps;
+import requests.steps.UserSteps;
 import specs.RequestSpecs;
 import specs.ResponseSpecs;
 
@@ -22,27 +24,16 @@ public class MakeTransferTest extends BaseTest {
         CreateUserRequestModel createdUser = RandomModelGenerator.generate(CreateUserRequestModel.class);
 
         //creating user by admin
-        new CrudRequester(RequestSpecs.adminSpec(),
-                Endpoint.ADMIN_USER,
-                ResponseSpecs.entityWasCreated())
-                .post(createdUser);
+        AdminSteps.createUser(createdUser);
 
         //creating account 1
-        ValidatableResponse createAccountResponseOne = new CrudRequester(RequestSpecs
-                .authAsUser(createdUser.getUsername(), createdUser.getPassword()),
-                Endpoint.ACCOUNTS,
-                ResponseSpecs.entityWasCreated())
-                .post(null);
+        ValidatableResponse createAccountResponseOne = UserSteps.createAccount(createdUser);
 
         //get account id
         long accountIdOne = ((Integer) createAccountResponseOne.extract().path("id")).longValue();
 
         //creating account 2
-        ValidatableResponse createAccountResponseTwo = new CrudRequester(RequestSpecs
-                .authAsUser(createdUser.getUsername(), createdUser.getPassword()),
-                Endpoint.ACCOUNTS,
-                ResponseSpecs.entityWasCreated())
-                .post(null);
+        ValidatableResponse createAccountResponseTwo = UserSteps.createAccount(createdUser);
 
         //get account id
         long accountIdTwo = ((Integer) createAccountResponseTwo.extract().path("id")).longValue();
@@ -52,11 +43,7 @@ public class MakeTransferTest extends BaseTest {
                 .balance(100.00).build();
 
         //make deposit
-        MakeDepositResponseModel responseModel = new ValidatedCrudRequester<MakeDepositResponseModel>(RequestSpecs
-                .depositAsAuthUser(createdUser.getUsername(), createdUser.getPassword()),
-                Endpoint.DEPOSIT,
-                ResponseSpecs.requestReturnsOK())
-                .post(makeDeposit);
+        MakeDepositResponseModel responseModel = UserSteps.makeDeposit(createdUser, makeDeposit);
 
 
         //check balance of account before transaction
@@ -70,11 +57,7 @@ public class MakeTransferTest extends BaseTest {
                 .amount(50.00).build();
 
         //create transaction
-        MakeTransferResponseModel transferRequester = new ValidatedCrudRequester<MakeTransferResponseModel>(
-                RequestSpecs.authAsUser(createdUser.getUsername(), createdUser.getPassword()),
-                Endpoint.TRANSFER,
-                ResponseSpecs.requestReturnsOK())
-                .post(transferRequestModel);
+        MakeTransferResponseModel transferRequester = UserSteps.makeTransfer(createdUser, transferRequestModel);
 
         //check balance of account after transaction
         double senderAccountBalanceAfter = AccountBalanceUtils.getBalanceForAccount(createdUser.getUsername(),
@@ -93,33 +76,19 @@ public class MakeTransferTest extends BaseTest {
         CreateUserRequestModel createdUser2 = RandomModelGenerator.generate(CreateUserRequestModel.class);
 
         //creating user1 by admin
-        new CrudRequester(RequestSpecs.adminSpec(),
-                Endpoint.ADMIN_USER,
-                ResponseSpecs.entityWasCreated())
-                .post(createdUser1);
+        AdminSteps.createUser(createdUser1);
 
         //creating user2 by admin
-        new CrudRequester(RequestSpecs.adminSpec(),
-                Endpoint.ADMIN_USER,
-                ResponseSpecs.entityWasCreated())
-                .post(createdUser2);
+        AdminSteps.createUser(createdUser2);
 
         //creating account 1
-        ValidatableResponse createAccountResponseOne = new CrudRequester(RequestSpecs
-                .authAsUser(createdUser1.getUsername(), createdUser1.getPassword()),
-                Endpoint.ACCOUNTS,
-                ResponseSpecs.entityWasCreated())
-                .post(null);
+        ValidatableResponse createAccountResponseOne = UserSteps.createAccount(createdUser1);
 
         //get account 1 id
         long accountIdOne = ((Integer) createAccountResponseOne.extract().path("id")).longValue();
 
         //creating account 2
-        ValidatableResponse createAccountResponseTwo = new CrudRequester(RequestSpecs
-                .authAsUser(createdUser2.getUsername(), createdUser2.getPassword()),
-                Endpoint.ACCOUNTS,
-                ResponseSpecs.entityWasCreated())
-                .post(null);
+        ValidatableResponse createAccountResponseTwo = UserSteps.createAccount(createdUser2);
 
         //get account 2 id
         long accountIdTwo = ((Integer) createAccountResponseTwo.extract().path("id")).longValue();
@@ -130,11 +99,7 @@ public class MakeTransferTest extends BaseTest {
                 .balance(100.00).build();
 
         //make deposit
-        MakeDepositResponseModel responseModel = new ValidatedCrudRequester<MakeDepositResponseModel>(RequestSpecs
-                .depositAsAuthUser(createdUser1.getUsername(), createdUser1.getPassword()),
-                Endpoint.DEPOSIT,
-                ResponseSpecs.requestReturnsOK())
-                .post(makeDeposit);
+        MakeDepositResponseModel responseModel = UserSteps.makeDeposit(createdUser1, makeDeposit);
 
 
         //create transfer model
@@ -151,11 +116,7 @@ public class MakeTransferTest extends BaseTest {
                 createdUser2.getPassword(), accountIdTwo);
 
         //create transaction
-        MakeTransferResponseModel transferRequester = new ValidatedCrudRequester<MakeTransferResponseModel>(
-                RequestSpecs.authAsUser(createdUser1.getUsername(), createdUser1.getPassword()),
-                Endpoint.TRANSFER,
-                ResponseSpecs.requestReturnsOK())
-                .post(transferRequestModel);
+        MakeTransferResponseModel transferRequester = UserSteps.makeTransfer(createdUser1, transferRequestModel);
 
         //check balances of accounts after transaction
         double senderAccountBalanceAfter = AccountBalanceUtils.getBalanceForAccount(createdUser1.getUsername(),

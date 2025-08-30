@@ -13,6 +13,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import requests.skelethon.Endpoint;
 import requests.skelethon.requesters.CrudRequester;
 import requests.skelethon.requesters.ValidatedCrudRequester;
+import requests.steps.AdminSteps;
 import specs.RequestSpecs;
 import specs.ResponseSpecs;
 
@@ -25,12 +26,7 @@ public class CreateUserTest extends BaseTest {
     public void adminCanCreateUserWithCorrectData() {
 
         CreateUserRequestModel createUserRequestModel = RandomModelGenerator.generate(CreateUserRequestModel.class);
-
-        CreateUserResponseModel createUserResponseModel = new ValidatedCrudRequester<CreateUserResponseModel>(
-                RequestSpecs.adminSpec(),
-                Endpoint.ADMIN_USER,
-                ResponseSpecs.entityWasCreated())
-                .post(createUserRequestModel);
+        CreateUserResponseModel createUserResponseModel = AdminSteps.createUser(createUserRequestModel);
 
         ModelAssertions.assertThatModels(createUserRequestModel, createUserResponseModel).match();
     }
