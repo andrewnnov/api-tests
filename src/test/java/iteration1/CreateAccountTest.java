@@ -15,7 +15,8 @@ public class CreateAccountTest extends BaseTest {
     @Test
     public void userCanCreateAccountTest() {
         //create user
-        CreateUserRequestModel createUserRequestModel = RandomModelGenerator.generate(CreateUserRequestModel.class);
+        CreateUserRequestModel createUserRequestModel =
+                RandomModelGenerator.generate(CreateUserRequestModel.class);
 
         new CrudRequester(RequestSpecs.adminSpec(),
                 Endpoint.ADMIN_USER,

@@ -5,6 +5,7 @@ import generators.RandomModelGenerator;
 import models.CreateUserRequestModel;
 import models.CreateUserResponseModel;
 import models.UserRole;
+import models.comparison.ModelAssertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -31,11 +32,7 @@ public class CreateUserTest extends BaseTest {
                 ResponseSpecs.entityWasCreated())
                 .post(createUserRequestModel);
 
-        softly.assertThat(createUserRequestModel.getUsername()).isEqualTo(createUserResponseModel.getUsername());
-        softly.assertThat(createUserRequestModel.getPassword()).isNotEqualTo(createUserResponseModel.getPassword());
-        softly.assertThat(createUserRequestModel.getRole()).isEqualTo(createUserResponseModel.getRole());
-
-
+        ModelAssertions.assertThatModels(createUserRequestModel, createUserResponseModel).match();
     }
 
     public static Stream<Arguments> userInvalidData() {
