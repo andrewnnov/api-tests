@@ -1,15 +1,12 @@
 package iteration2.tests.negative;
 
-import generators.RandomData;
 import generators.RandomModelGenerator;
 import iteration1.BaseTest;
 import models.ChangeNameRequestModel;
 import models.ChangeNameResponseModel;
 import models.CreateUserRequestModel;
-import models.UserRole;
 import org.junit.jupiter.api.Test;
 import requests.skelethon.Endpoint;
-import requests.skelethon.requesters.CrudRequester;
 import requests.skelethon.requesters.ValidatedCrudRequester;
 import requests.steps.AdminSteps;
 import specs.RequestSpecs;

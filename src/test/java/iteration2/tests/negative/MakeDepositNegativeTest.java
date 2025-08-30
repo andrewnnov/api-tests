@@ -1,6 +1,5 @@
 package iteration2.tests.negative;
 
-import generators.RandomData;
 import generators.RandomModelGenerator;
 import helpers.AccountBalanceUtils;
 import io.restassured.response.ValidatableResponse;
@@ -8,7 +7,6 @@ import iteration1.BaseTest;
 import models.CreateUserRequestModel;
 import models.MakeDepositRequestModel;
 import models.MakeDepositResponseModel;
-import models.UserRole;
 import org.junit.jupiter.api.Test;
 import requests.skelethon.Endpoint;
 import requests.skelethon.requesters.CrudRequester;
@@ -97,19 +95,14 @@ public class MakeDepositNegativeTest extends BaseTest {
     @Test
     public void userCannotMakeNegativeDeposit() {
 
-        //creating model of user
         CreateUserRequestModel createdUser = RandomModelGenerator.generate(CreateUserRequestModel.class);
 
-        //creating user by admin
         AdminSteps.createUser(createdUser);
 
-        //creating account
         ValidatableResponse createAccountResponse = UserSteps.createAccount(createdUser);
 
-        //get account id
         long accountId = ((Integer) createAccountResponse.extract().path("id")).longValue();
 
-        //creating model for deposit
         MakeDepositRequestModel makeDeposit = MakeDepositRequestModel.builder()
                 .id(accountId)
                 .balance(-50.00).build();
@@ -117,7 +110,6 @@ public class MakeDepositNegativeTest extends BaseTest {
         double senderAccountBalanceBefore = AccountBalanceUtils.getBalanceForAccount(createdUser.getUsername(),
                 createdUser.getPassword(), accountId);
 
-        //make deposit
          new CrudRequester(RequestSpecs
                 .depositAsAuthUser(createdUser.getUsername(), createdUser.getPassword()),
                 Endpoint.DEPOSIT,
@@ -132,16 +124,12 @@ public class MakeDepositNegativeTest extends BaseTest {
     public void userCannotMakeZeroDeposit() {
         CreateUserRequestModel createdUser = RandomModelGenerator.generate(CreateUserRequestModel.class);
 
-        //creating user by admin
         AdminSteps.createUser(createdUser);
 
-        //creating account
         ValidatableResponse createAccountResponse = UserSteps.createAccount(createdUser);
 
-        //get account id
         long accountId = ((Integer) createAccountResponse.extract().path("id")).longValue();
 
-        //creating model for deposit
         MakeDepositRequestModel makeDeposit = MakeDepositRequestModel.builder()
                 .id(accountId)
                 .balance(0.00).build();
@@ -149,7 +137,6 @@ public class MakeDepositNegativeTest extends BaseTest {
         double senderAccountBalanceBefore = AccountBalanceUtils.getBalanceForAccount(createdUser.getUsername(),
                 createdUser.getPassword(), accountId);
 
-        //make deposit
         new CrudRequester(RequestSpecs
                 .depositAsAuthUser(createdUser.getUsername(), createdUser.getPassword()),
                 Endpoint.DEPOSIT,
