@@ -1,44 +1,31 @@
 package iteration2.tests.positive;
 
-import generators.RandomModelGenerator;
 import iteration1.BaseTest;
 import models.ChangeNameRequestModel;
 import models.ChangeNameResponseModel;
 import models.CreateUserRequestModel;
 import models.GetUserResponseModel;
 import org.junit.jupiter.api.Test;
-import requests.skelethon.Endpoint;
-import requests.skelethon.requesters.ValidatedCrudRequester;
 import requests.steps.AdminSteps;
-import specs.RequestSpecs;
-import specs.ResponseSpecs;
+import requests.steps.CreateModelSteps;
+import requests.steps.UserSteps;
 
 public class ChangeNameTest extends BaseTest {
-    private String newUserName = "Anna";
+    private static final String NEW_USER_NAME = "Anna";
 
     @Test
     public void authUserCanUpdateOwnName() {
 
-        CreateUserRequestModel createdUser = RandomModelGenerator.generate(CreateUserRequestModel.class);
-
+        CreateUserRequestModel createdUser = CreateModelSteps.createUserModel();
         AdminSteps.createUser(createdUser);
 
-        ChangeNameRequestModel changeName = ChangeNameRequestModel.builder()
-                .name(newUserName).build();
+        ChangeNameRequestModel changeName = CreateModelSteps.changeNameModel(NEW_USER_NAME);
 
-        ChangeNameResponseModel responseModel = new ValidatedCrudRequester<ChangeNameResponseModel>(
-                RequestSpecs.authAsUser(createdUser.getUsername(),
-                createdUser.getPassword()),
-                Endpoint.CHANGE_NAME,
-                ResponseSpecs.requestReturnOK("Profile updated successfully"))
-                .update(changeName);
+        ChangeNameResponseModel responseModel = UserSteps.changeName(createdUser, changeName);
 
-        GetUserResponseModel responseModelAfter = (GetUserResponseModel) new ValidatedCrudRequester<GetUserResponseModel>(
-                RequestSpecs.authAsUser(createdUser.getUsername(), createdUser.getPassword()),
-                Endpoint.GET_USER,
-                ResponseSpecs.requestReturnsOK()).get();
+        GetUserResponseModel responseModelAfter = UserSteps.getUser(createdUser);
 
-        softly.assertThat(newUserName).isEqualTo(responseModel.getCustomer().getName());
-        softly.assertThat(newUserName).isEqualTo(responseModelAfter.getName());
+        softly.assertThat(NEW_USER_NAME).isEqualTo(responseModel.getCustomer().getName());
+        softly.assertThat(NEW_USER_NAME).isEqualTo(responseModelAfter.getName());
     }
 }

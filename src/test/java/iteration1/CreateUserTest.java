@@ -1,6 +1,5 @@
 package iteration1;
 
-import generators.RandomModelGenerator;
 import models.CreateUserRequestModel;
 import models.CreateUserResponseModel;
 import models.comparison.ModelAssertions;
@@ -11,6 +10,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import requests.skelethon.Endpoint;
 import requests.skelethon.requesters.CrudRequester;
 import requests.steps.AdminSteps;
+import requests.steps.CreateModelSteps;
 import specs.RequestSpecs;
 import specs.ResponseSpecs;
 
@@ -22,7 +22,7 @@ public class CreateUserTest extends BaseTest {
     @Test
     public void adminCanCreateUserWithCorrectData() {
 
-        CreateUserRequestModel createUserRequestModel = RandomModelGenerator.generate(CreateUserRequestModel.class);
+        CreateUserRequestModel createUserRequestModel = CreateModelSteps.createUserModel();
         CreateUserResponseModel createUserResponseModel = AdminSteps.createUser(createUserRequestModel);
 
         ModelAssertions.assertThatModels(createUserRequestModel, createUserResponseModel).match();

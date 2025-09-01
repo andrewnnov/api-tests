@@ -37,6 +37,33 @@ public class UserSteps {
                 .post(transferRequestModel);
     }
 
+    public static long getAccountID(ValidatableResponse validatableResponse) {
+        return ((Integer) validatableResponse.extract().path("id")).longValue();
+    }
+
+    public static ChangeNameResponseModel changeName(CreateUserRequestModel createdUser, ChangeNameRequestModel newUserName) {
+        return new ValidatedCrudRequester<ChangeNameResponseModel>(
+                RequestSpecs.authAsUser(createdUser.getUsername(),
+                        createdUser.getPassword()),
+                Endpoint.CHANGE_NAME,
+                ResponseSpecs.requestReturnOK("Profile updated successfully"))
+                .update(newUserName);
+    }
+
+    public static GetUserResponseModel getUser(CreateUserRequestModel createdUser) {
+        return (GetUserResponseModel) new ValidatedCrudRequester<GetUserResponseModel>(
+                RequestSpecs.authAsUser(createdUser.getUsername(), createdUser.getPassword()),
+                Endpoint.GET_USER,
+                ResponseSpecs.requestReturnsOK()).get();
+    }
+
+
+
+
+
+
+
+
 
 
 }

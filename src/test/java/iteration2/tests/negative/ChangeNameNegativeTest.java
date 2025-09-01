@@ -1,6 +1,5 @@
 package iteration2.tests.negative;
 
-import generators.RandomModelGenerator;
 import iteration1.BaseTest;
 import models.ChangeNameRequestModel;
 import models.ChangeNameResponseModel;
@@ -9,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import requests.skelethon.Endpoint;
 import requests.skelethon.requesters.ValidatedCrudRequester;
 import requests.steps.AdminSteps;
+import requests.steps.CreateModelSteps;
 import specs.RequestSpecs;
 import specs.ResponseSpecs;
 
@@ -17,12 +17,10 @@ public class ChangeNameNegativeTest extends BaseTest {
     @Test
     public void authUserCanNotUpdateOwnNameWithBlancValue() {
         String newUserName = "   ";
-        CreateUserRequestModel createdUser = RandomModelGenerator.generate(CreateUserRequestModel.class);
-
+        CreateUserRequestModel createdUser = CreateModelSteps.createUserModel();
         AdminSteps.createUser(createdUser);
 
-        ChangeNameRequestModel changeName = ChangeNameRequestModel.builder()
-                .name(newUserName).build();
+        ChangeNameRequestModel changeName = CreateModelSteps.changeNameModel(newUserName);
 
         ChangeNameResponseModel responseModel = new ValidatedCrudRequester<ChangeNameResponseModel>(
                 RequestSpecs.authAsUser(createdUser.getUsername(), createdUser.getPassword()),
@@ -38,12 +36,10 @@ public class ChangeNameNegativeTest extends BaseTest {
     public void userCannotInjectJavaScriptInNameField() {
         String newUserName = "<script>alert('XSS')</script>";
 
-        CreateUserRequestModel createdUser = RandomModelGenerator.generate(CreateUserRequestModel.class);
-
+        CreateUserRequestModel createdUser = CreateModelSteps.createUserModel();
         AdminSteps.createUser(createdUser);
 
-        ChangeNameRequestModel changeName = ChangeNameRequestModel.builder()
-                .name(newUserName).build();
+        ChangeNameRequestModel changeName = CreateModelSteps.changeNameModel(newUserName);
 
         ChangeNameResponseModel responseModel = new ValidatedCrudRequester<ChangeNameResponseModel>(
                 RequestSpecs.authAsUser(createdUser.getUsername(), createdUser.getPassword()),

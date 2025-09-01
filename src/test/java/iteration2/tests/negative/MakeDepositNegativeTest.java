@@ -1,46 +1,41 @@
 package iteration2.tests.negative;
 
-import generators.RandomModelGenerator;
 import helpers.AccountBalanceUtils;
 import io.restassured.response.ValidatableResponse;
 import iteration1.BaseTest;
 import models.CreateUserRequestModel;
 import models.MakeDepositRequestModel;
-import models.MakeDepositResponseModel;
 import org.junit.jupiter.api.Test;
 import requests.skelethon.Endpoint;
 import requests.skelethon.requesters.CrudRequester;
 import requests.steps.AdminSteps;
+import requests.steps.CreateModelSteps;
 import requests.steps.UserSteps;
 import specs.RequestSpecs;
 import specs.ResponseSpecs;
 
 public class MakeDepositNegativeTest extends BaseTest {
     private static final long NOT_EXISTING_ACCOUNT_ID = 45678;
+    public static final double DEPOSIT_AMOUNT = 100.00;
+    public static final double NEGATIVE_DEPOSIT_AMOUNT = -50.00;
+    public static final double ZERO_DEPOSIT_AMOUNT = 0.00;
 
     @Test
     public void userCannotDepositToAnotherUserAccount() {
 
-        CreateUserRequestModel createdUser1 = RandomModelGenerator.generate(CreateUserRequestModel.class);
-
-        CreateUserRequestModel createdUser2 = RandomModelGenerator.generate(CreateUserRequestModel.class);
+        CreateUserRequestModel createdUser1 = CreateModelSteps.createUserModel();
+        CreateUserRequestModel createdUser2 = CreateModelSteps.createUserModel();
 
         AdminSteps.createUser(createdUser1);
-
         AdminSteps.createUser(createdUser2);
 
         ValidatableResponse createAccountResponse1 = UserSteps.createAccount(createdUser1);
-
-        long accountIdOne = ((Integer) createAccountResponse1.extract().path("id")).longValue();
+        long accountIdOne = UserSteps.getAccountID(createAccountResponse1);
 
         ValidatableResponse createAccountResponse2 = UserSteps.createAccount(createdUser2);
+        long accountIdTwo = UserSteps.getAccountID(createAccountResponse2);
 
-        long accountIdTwo = ((Integer) createAccountResponse2.extract().path("id")).longValue();
-
-        MakeDepositResponseModel makeDeposit = MakeDepositResponseModel.builder()
-                .id(accountIdTwo)
-                .balance(100.00)
-                .build();
+        MakeDepositRequestModel makeDeposit = CreateModelSteps.createDepositModel(accountIdTwo, DEPOSIT_AMOUNT);
 
         double senderAccountBalanceBefore = AccountBalanceUtils.getBalanceForAccount(createdUser1.getUsername(),
                 createdUser1.getPassword(), accountIdOne);
@@ -62,18 +57,13 @@ public class MakeDepositNegativeTest extends BaseTest {
     @Test
     public void userCannotDepositToNotExistingUserAccountId() {
 
-        CreateUserRequestModel createdUser1 = RandomModelGenerator.generate(CreateUserRequestModel.class);
-
+        CreateUserRequestModel createdUser1 = CreateModelSteps.createUserModel();
         AdminSteps.createUser(createdUser1);
 
         ValidatableResponse createAccountResponse1 = UserSteps.createAccount(createdUser1);
+        long accountIdOne = UserSteps.getAccountID(createAccountResponse1);
 
-        long accountIdOne = ((Integer) createAccountResponse1.extract().path("id")).longValue();
-
-        MakeDepositResponseModel makeDeposit = MakeDepositResponseModel.builder()
-                .id(NOT_EXISTING_ACCOUNT_ID)
-                .balance(100.00)
-                .build();
+        MakeDepositRequestModel makeDeposit = CreateModelSteps.createDepositModel(NOT_EXISTING_ACCOUNT_ID, DEPOSIT_AMOUNT);
 
         double senderAccountBalanceBefore = AccountBalanceUtils.getBalanceForAccount(createdUser1.getUsername(),
                 createdUser1.getPassword(), accountIdOne);
@@ -95,17 +85,13 @@ public class MakeDepositNegativeTest extends BaseTest {
     @Test
     public void userCannotMakeNegativeDeposit() {
 
-        CreateUserRequestModel createdUser = RandomModelGenerator.generate(CreateUserRequestModel.class);
-
+        CreateUserRequestModel createdUser = CreateModelSteps.createUserModel();
         AdminSteps.createUser(createdUser);
 
         ValidatableResponse createAccountResponse = UserSteps.createAccount(createdUser);
+        long accountId = UserSteps.getAccountID(createAccountResponse);
 
-        long accountId = ((Integer) createAccountResponse.extract().path("id")).longValue();
-
-        MakeDepositRequestModel makeDeposit = MakeDepositRequestModel.builder()
-                .id(accountId)
-                .balance(-50.00).build();
+        MakeDepositRequestModel makeDeposit = CreateModelSteps.createDepositModel(accountId, NEGATIVE_DEPOSIT_AMOUNT);
 
         double senderAccountBalanceBefore = AccountBalanceUtils.getBalanceForAccount(createdUser.getUsername(),
                 createdUser.getPassword(), accountId);
@@ -118,21 +104,19 @@ public class MakeDepositNegativeTest extends BaseTest {
 
         double senderAccountBalanceAfter = AccountBalanceUtils.getBalanceForAccount(createdUser.getUsername(),
                 createdUser.getPassword(), accountId);
+
+        softly.assertThat(senderAccountBalanceBefore).isEqualTo(senderAccountBalanceAfter);
     }
 
     @Test
     public void userCannotMakeZeroDeposit() {
-        CreateUserRequestModel createdUser = RandomModelGenerator.generate(CreateUserRequestModel.class);
-
+        CreateUserRequestModel createdUser = CreateModelSteps.createUserModel();
         AdminSteps.createUser(createdUser);
 
         ValidatableResponse createAccountResponse = UserSteps.createAccount(createdUser);
+        long accountId = UserSteps.getAccountID(createAccountResponse);
 
-        long accountId = ((Integer) createAccountResponse.extract().path("id")).longValue();
-
-        MakeDepositRequestModel makeDeposit = MakeDepositRequestModel.builder()
-                .id(accountId)
-                .balance(0.00).build();
+        MakeDepositRequestModel makeDeposit = CreateModelSteps.createDepositModel(accountId, ZERO_DEPOSIT_AMOUNT);
 
         double senderAccountBalanceBefore = AccountBalanceUtils.getBalanceForAccount(createdUser.getUsername(),
                 createdUser.getPassword(), accountId);
