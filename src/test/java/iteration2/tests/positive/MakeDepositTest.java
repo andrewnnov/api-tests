@@ -2,7 +2,7 @@ package iteration2.tests.positive;
 
 import helpers.AccountBalanceUtils;
 import io.restassured.response.ValidatableResponse;
-import iteration1.BaseTest;
+import iteration1.api.BaseTest;
 import models.CreateUserRequestModel;
 import models.MakeDepositRequestModel;
 import models.MakeDepositResponseModel;

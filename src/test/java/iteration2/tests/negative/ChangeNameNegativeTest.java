@@ -1,6 +1,6 @@
 package iteration2.tests.negative;
 
-import iteration1.BaseTest;
+import iteration1.api.BaseTest;
 import models.ChangeNameRequestModel;
 import models.ChangeNameResponseModel;
 import models.CreateUserRequestModel;
