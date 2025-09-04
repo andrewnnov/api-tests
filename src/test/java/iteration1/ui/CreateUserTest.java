@@ -8,7 +8,6 @@ import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.Alert;
-import requests.steps.AdminSteps;
 import requests.steps.CreateModelSteps;
 import specs.RequestSpecs;
 
@@ -17,7 +16,6 @@ import java.util.Map;
 
 import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.switchTo;
-
 import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -127,7 +125,7 @@ public class CreateUserTest {
         long usersWithSameUsername = Arrays.stream(users).filter(user -> user.getUsername()
                 .equals(createUserRequestModel.getUsername())).count();
 
-        assertThat(usersWithSameUsername).isEqualTo(0);
+        assertThat(usersWithSameUsername).isZero();
 
     }
 
