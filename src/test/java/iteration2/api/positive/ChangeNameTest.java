@@ -1,4 +1,4 @@
-package iteration2.tests.positive;
+package iteration2.api.positive;
 
 import iteration1.api.BaseTest;
 import models.ChangeNameRequestModel;

@@ -1,4 +1,4 @@
-package iteration2.tests.positive;
+package iteration2.api.positive;
 
 import helpers.AccountBalanceUtils;
 import io.restassured.response.ValidatableResponse;

@@ -1,4 +1,4 @@
-package iteration2.tests.negative;
+package iteration2.api.negative;
 
 import iteration1.api.BaseTest;
 import models.ChangeNameRequestModel;
