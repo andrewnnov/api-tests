@@ -1,15 +1,15 @@
 package iteration2.api.positive;
 
-import helpers.AccountBalanceUtils;
+import api.helpers.AccountBalanceUtils;
 import io.restassured.response.ValidatableResponse;
 import iteration1.api.BaseTest;
-import models.CreateUserRequestModel;
-import models.MakeDepositRequestModel;
-import models.MakeDepositResponseModel;
+import api.models.CreateUserRequestModel;
+import api.models.MakeDepositRequestModel;
+import api.models.MakeDepositResponseModel;
 import org.junit.jupiter.api.Test;
-import requests.steps.AdminSteps;
-import requests.steps.CreateModelSteps;
-import requests.steps.UserSteps;
+import api.requests.steps.AdminSteps;
+import api.requests.steps.CreateModelSteps;
+import api.requests.steps.UserSteps;
 
 public class MakeDepositTest extends BaseTest {
     public static final double DEPOSIT_AMOUNT = 100.00;

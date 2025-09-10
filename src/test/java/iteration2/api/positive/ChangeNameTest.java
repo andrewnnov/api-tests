@@ -1,14 +1,14 @@
 package iteration2.api.positive;
 
 import iteration1.api.BaseTest;
-import models.ChangeNameRequestModel;
-import models.ChangeNameResponseModel;
-import models.CreateUserRequestModel;
-import models.GetUserResponseModel;
+import api.models.ChangeNameRequestModel;
+import api.models.ChangeNameResponseModel;
+import api.models.CreateUserRequestModel;
+import api.models.GetUserResponseModel;
 import org.junit.jupiter.api.Test;
-import requests.steps.AdminSteps;
-import requests.steps.CreateModelSteps;
-import requests.steps.UserSteps;
+import api.requests.steps.AdminSteps;
+import api.requests.steps.CreateModelSteps;
+import api.requests.steps.UserSteps;
 
 public class ChangeNameTest extends BaseTest {
     private static final String NEW_USER_NAME = "Anna";
