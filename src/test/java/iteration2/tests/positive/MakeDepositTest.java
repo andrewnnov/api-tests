@@ -1,49 +1,41 @@
 package iteration2.tests.positive;
 
-import io.restassured.RestAssured;
-import io.restassured.filter.log.RequestLoggingFilter;
-import io.restassured.filter.log.ResponseLoggingFilter;
-import iteration2.steps.AccountStep;
-import iteration2.steps.AuthStep;
-import iteration2.steps.UserSteps;
-import iteration2.utils.UserGenerator;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
+import helpers.AccountBalanceUtils;
+import io.restassured.response.ValidatableResponse;
+import iteration1.BaseTest;
+import models.CreateUserRequestModel;
+import models.MakeDepositRequestModel;
+import models.MakeDepositResponseModel;
 import org.junit.jupiter.api.Test;
+import requests.steps.AdminSteps;
+import requests.steps.CreateModelSteps;
+import requests.steps.UserSteps;
 
-import java.util.List;
-
-public class MakeDepositTest {
-    private static final String ADMIN_USERNAME = "admin";
-    private static final String ADMIN_PASSWORD = "admin";
-
-    private String adminToken;
-    private String userToken;
-    private int accountId;
-
-    @BeforeAll
-    public static void setupRestAssured() {
-        RestAssured.filters(List.of(
-                new RequestLoggingFilter(),
-                new ResponseLoggingFilter()
-        ));
-    }
-
-    @BeforeEach
-    public void setUp() {
-        adminToken = AuthStep.login(ADMIN_USERNAME, ADMIN_PASSWORD);
-        String generatedUserName = UserGenerator.generateUsername("User");
-        userToken = UserSteps.createUser(adminToken, generatedUserName, "Kate5000!");
-        accountId = AccountStep.createAccount(userToken);
-    }
+public class MakeDepositTest extends BaseTest {
+    public static final double DEPOSIT_AMOUNT = 100.00;
 
     @Test
-    public void canDepositByAuthUser() {
-        float balanceBeforeDeposit = AccountStep.getBalance(userToken,accountId);
-        AccountStep.deposit(userToken, accountId, 100);
-        float balanceAfterDeposit = AccountStep.getBalance(userToken,accountId);
-        Assertions.assertEquals(balanceBeforeDeposit + 100, balanceAfterDeposit);
+    public void authUserCanDepositMoneyWithValidAmount() {
+
+        CreateUserRequestModel createdUser = CreateModelSteps.createUserModel();
+        AdminSteps.createUser(createdUser);
+
+        ValidatableResponse createAccountResponse = UserSteps.createAccount(createdUser);
+        long accountId = UserSteps.getAccountID(createAccountResponse);
+
+        MakeDepositRequestModel makeDeposit = CreateModelSteps.createDepositModel(accountId, DEPOSIT_AMOUNT);
+
+        double accountBalanceBefore = AccountBalanceUtils.getBalanceForAccount(createdUser.getUsername(),
+                createdUser.getPassword(), accountId);
+
+        MakeDepositResponseModel responseModel = UserSteps.makeDeposit(createdUser, makeDeposit);
+
+        double accountBalanceAfter = AccountBalanceUtils.getBalanceForAccount(createdUser.getUsername(),
+                createdUser.getPassword(), accountId);
+
+        softly.assertThat(makeDeposit.getBalance()).isEqualTo(responseModel.getBalance());
+        softly.assertThat(makeDeposit.getId()).isEqualTo(responseModel.getId());
+        softly.assertThat(accountBalanceBefore).isEqualTo(accountBalanceAfter - DEPOSIT_AMOUNT);
     }
 
 

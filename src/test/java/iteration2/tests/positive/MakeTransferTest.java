@@ -1,81 +1,83 @@
 package iteration2.tests.positive;
 
-import io.restassured.RestAssured;
-import io.restassured.filter.log.RequestLoggingFilter;
-import io.restassured.filter.log.ResponseLoggingFilter;
-import iteration2.steps.AccountStep;
-import iteration2.steps.AuthStep;
-import iteration2.steps.UserSteps;
-import iteration2.utils.UserGenerator;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
+import helpers.AccountBalanceUtils;
+import io.restassured.response.ValidatableResponse;
+import iteration1.BaseTest;
+import models.CreateUserRequestModel;
+import models.MakeDepositRequestModel;
+import models.MakeTransferRequestModel;
 import org.junit.jupiter.api.Test;
+import requests.steps.AdminSteps;
+import requests.steps.CreateModelSteps;
+import requests.steps.UserSteps;
 
-import java.util.List;
-
-public class MakeTransferTest {
-    private static final String ADMIN_USERNAME = "admin";
-    private static final String ADMIN_PASSWORD = "admin";
-
-    private String adminToken;
-    private String userToken;
-    private int senderAccountId;
-    private int receiverAccountId;
-
-    @BeforeAll
-    public static void setupRestAssured() {
-        RestAssured.filters(List.of(
-                new RequestLoggingFilter(),
-                new ResponseLoggingFilter()
-        ));
-    }
-
-    @BeforeEach
-    public void setUp() {
-        adminToken = AuthStep.login(ADMIN_USERNAME, ADMIN_PASSWORD);
-        String generatedUserName = UserGenerator.generateUsername("User");
-        userToken = UserSteps.createUser(adminToken, generatedUserName, "Kate5000!");
-        senderAccountId = AccountStep.createAccount(userToken);
-        receiverAccountId = AccountStep.createAccount(userToken);
-    }
+public class MakeTransferTest extends BaseTest {
+    public static final double DEPOSIT_AMOUNT = 100.00;
+    public static final double TRANSFER_AMOUNT = 50.00;
 
     @Test
     public void authUserCanTransferMoneyToAnotherOwnAccount() {
-        float deposit = 200.0F;
-        float transfer = 100.0F;
-        AccountStep.deposit(userToken, senderAccountId, deposit);
-        float balanceSenderBefore = AccountStep.getBalance(userToken, senderAccountId);
-        float balanceReceiveBefore = AccountStep.getBalance(userToken, receiverAccountId);
 
-        AccountStep.transfer(userToken, senderAccountId, receiverAccountId, transfer);
-        float balanceSenderAfter = AccountStep.getBalance(userToken, senderAccountId);
-        float balanceReceiveAfter = AccountStep.getBalance(userToken, receiverAccountId);
+        CreateUserRequestModel createdUser = CreateModelSteps.createUserModel();
+        AdminSteps.createUser(createdUser);
 
-        Assertions.assertEquals(balanceSenderBefore - transfer, balanceSenderAfter);
-        Assertions.assertEquals(balanceReceiveBefore + transfer, balanceReceiveAfter);
+        ValidatableResponse createAccountResponseOne = UserSteps.createAccount(createdUser);
+        long accountIdOne = UserSteps.getAccountID(createAccountResponseOne);
+
+        ValidatableResponse createAccountResponseTwo = UserSteps.createAccount(createdUser);
+        long accountIdTwo = UserSteps.getAccountID(createAccountResponseTwo);
+
+        MakeDepositRequestModel makeDeposit = CreateModelSteps.createDepositModel(accountIdOne, DEPOSIT_AMOUNT);
+
+        UserSteps.makeDeposit(createdUser, makeDeposit);
+
+        double senderAccountBalanceBefore = AccountBalanceUtils.getBalanceForAccount(createdUser.getUsername(),
+                createdUser.getPassword(), accountIdOne);
+
+        MakeTransferRequestModel transferRequestModel = CreateModelSteps.createTransferModel(accountIdOne, accountIdTwo, TRANSFER_AMOUNT);
+        UserSteps.makeTransfer(createdUser, transferRequestModel);
+
+        double senderAccountBalanceAfter = AccountBalanceUtils.getBalanceForAccount(createdUser.getUsername(),
+                createdUser.getPassword(), accountIdOne);
+
+        softly.assertThat(senderAccountBalanceBefore).isEqualTo(senderAccountBalanceAfter + TRANSFER_AMOUNT);
     }
 
     @Test
     public void authUserCanTransferMoneyToAnotherUserAccount() {
-        float deposit = 200.0F;
-        float transfer = 100.0F;
 
-        String generatedUserName = UserGenerator.generateUsername("User2");
-        String userToken2 = UserSteps.createUser(adminToken, generatedUserName, "Kate5000!");
-        int receiverAccountId2 = AccountStep.createAccount(userToken2);
+        CreateUserRequestModel createdUser1 = CreateModelSteps.createUserModel();
+        AdminSteps.createUser(createdUser1);
 
-        AccountStep.deposit(userToken, senderAccountId, deposit);
-        float balanceSenderBefore = AccountStep.getBalance(userToken, senderAccountId);
-        float balanceReceiveBefore = AccountStep.getBalance(userToken2, receiverAccountId2);
+        CreateUserRequestModel createdUser2 = CreateModelSteps.createUserModel();
+        AdminSteps.createUser(createdUser2);
 
-        AccountStep.transfer(userToken, senderAccountId, receiverAccountId2, transfer);
-        float balanceSenderAfter = AccountStep.getBalance(userToken, senderAccountId);
-        float balanceReceiveAfter = AccountStep.getBalance(userToken2, receiverAccountId2);
+        ValidatableResponse createAccountResponseOne = UserSteps.createAccount(createdUser1);
+        long accountIdOne = UserSteps.getAccountID(createAccountResponseOne);
 
-        Assertions.assertEquals(balanceSenderBefore - transfer, balanceSenderAfter);
-        Assertions.assertEquals(balanceReceiveBefore + transfer, balanceReceiveAfter);
+        ValidatableResponse createAccountResponseTwo = UserSteps.createAccount(createdUser2);
+        long accountIdTwo = UserSteps.getAccountID(createAccountResponseTwo);
+
+        MakeDepositRequestModel makeDeposit = CreateModelSteps.createDepositModel(accountIdOne, DEPOSIT_AMOUNT);
+        UserSteps.makeDeposit(createdUser1, makeDeposit);
+
+        MakeTransferRequestModel transferRequestModel = CreateModelSteps.createTransferModel(accountIdOne, accountIdTwo, TRANSFER_AMOUNT);
+
+        double senderAccountBalanceBefore = AccountBalanceUtils.getBalanceForAccount(createdUser1.getUsername(),
+                createdUser1.getPassword(), accountIdOne);
+
+        double receiverAccountBalanceBefore = AccountBalanceUtils.getBalanceForAccount(createdUser2.getUsername(),
+                createdUser2.getPassword(), accountIdTwo);
+
+        UserSteps.makeTransfer(createdUser1, transferRequestModel);
+
+        double senderAccountBalanceAfter = AccountBalanceUtils.getBalanceForAccount(createdUser1.getUsername(),
+                createdUser1.getPassword(), accountIdOne);
+
+        double receiverAccountBalanceAfter = AccountBalanceUtils.getBalanceForAccount(createdUser2.getUsername(),
+                createdUser2.getPassword(), accountIdTwo);
+
+        softly.assertThat(senderAccountBalanceBefore).isEqualTo(senderAccountBalanceAfter + TRANSFER_AMOUNT);
+        softly.assertThat(receiverAccountBalanceBefore).isEqualTo(receiverAccountBalanceAfter - TRANSFER_AMOUNT);
     }
-
-
 }
