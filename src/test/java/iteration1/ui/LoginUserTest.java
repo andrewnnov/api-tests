@@ -4,12 +4,15 @@ import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.Configuration;
 import com.codeborne.selenide.Selectors;
 import com.codeborne.selenide.Selenide;
-import models.CreateUserRequestModel;
-import models.CreateUserResponseModel;
+import api.models.CreateUserRequestModel;
+import api.models.CreateUserResponseModel;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import requests.steps.AdminSteps;
-import requests.steps.CreateModelSteps;
+import api.requests.steps.AdminSteps;
+import api.requests.steps.CreateModelSteps;
+import ui.pages.AdminPanelPage;
+import ui.pages.LoginPage;
+import ui.pages.UserDashboardPage;
 
 import java.util.Map;
 
@@ -33,27 +36,21 @@ public class LoginUserTest {
 
     @Test
     public void adminCanLoginWithCorrectDataTest() {
-        CreateUserRequestModel admin = CreateUserRequestModel.builder()
-                .username("admin")
-                .password("admin").build();
+        CreateUserRequestModel admin = CreateUserRequestModel.getAdmin();
 
-        Selenide.open("/login");
-        $(Selectors.byAttribute("placeholder", "Username")).sendKeys(admin.getUsername());
-        $(Selectors.byAttribute("placeholder", "Password")).sendKeys(admin.getPassword());
-        $("button").click();
-        $(Selectors.byText("Admin Panel")).shouldBe(Condition.visible);
+        new LoginPage().open().login(admin.getUsername(), admin.getPassword())
+                        .getPage(AdminPanelPage.class).getAdminPanelText().shouldBe(Condition.visible);
     }
 
     @Test
     public void userCanLoginWithCorrectDataTest() {
-        CreateUserRequestModel createUserRequestModel = CreateModelSteps.createUserModel();
-        CreateUserResponseModel user = AdminSteps.createUser(createUserRequestModel);
+        CreateUserRequestModel user = CreateModelSteps.createUserModel();
+        AdminSteps.createUser(user);
 
-        Selenide.open("/login");
-        $(Selectors.byAttribute("placeholder", "Username")).sendKeys(createUserRequestModel.getUsername());
-        $(Selectors.byAttribute("placeholder", "Password")).sendKeys(createUserRequestModel.getPassword());
-        $("button").click();
-        $(Selectors.byText("User Dashboard")).shouldBe(Condition.visible);
-        $(Selectors.byClassName("welcome-text")).shouldBe(Condition.visible).shouldHave(Condition.text("Welcome, noname!"));
+        new LoginPage().open().login(user.getUsername(), user.getPassword())
+                .getPage(UserDashboardPage.class)
+                .getWelcomeText()
+                .shouldBe(Condition.visible)
+                .shouldHave(Condition.text("Welcome, noname!"));
     }
 }
