@@ -1,11 +1,11 @@
 package iteration1.api;
 
-import models.CreateUserRequestModel;
-import models.CreateUserResponseModel;
+import api.models.CreateUserRequestModel;
+import api.models.CreateUserResponseModel;
 import org.junit.jupiter.api.Test;
-import requests.steps.AdminSteps;
-import requests.steps.CreateModelSteps;
-import requests.steps.UserSteps;
+import api.requests.steps.AdminSteps;
+import api.requests.steps.CreateModelSteps;
+import api.requests.steps.UserSteps;
 
 public class CreateAccountTest extends BaseTest {
 
