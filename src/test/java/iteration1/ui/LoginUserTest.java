@@ -8,7 +8,7 @@ import com.codeborne.selenide.Condition;
 import org.junit.jupiter.api.Test;
 import ui.pages.AdminPanelPage;
 import ui.pages.LoginPage;
-import ui.pages.UserDashBoard;
+import ui.pages.UserDashBoardPage;
 
 public class LoginUserTest extends BaseUiTest {
 
@@ -29,7 +29,7 @@ public class LoginUserTest extends BaseUiTest {
         CreateUserResponseModel user = AdminSteps.createUser(createUserRequestModel);
 
         new LoginPage().open().login(createUserRequestModel.getUsername(), createUserRequestModel.getPassword())
-                        .getPage(UserDashBoard.class).getWelcomeText()
+                        .getPage(UserDashBoardPage.class).getWelcomeText()
                 .shouldBe(Condition.visible)
                 .shouldHave(Condition.text("Welcome, noname!"));
     }

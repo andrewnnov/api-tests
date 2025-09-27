@@ -8,7 +8,7 @@ import api.requests.steps.CreateModelSteps;
 import api.requests.steps.UserSteps;
 import org.junit.jupiter.api.Test;
 import ui.pages.BankAlert;
-import ui.pages.UserDashBoard;
+import ui.pages.UserDashBoardPage;
 
 import java.util.List;
 
@@ -26,14 +26,14 @@ public class CreateAccountTest extends BaseUiTest {
 
         authAsUser(userModel);
 
-        new UserDashBoard().open().createNewAccount();
+        new UserDashBoardPage().open().createNewAccount();
 
        List<CreateAccountResponseModel> createdAccounts  = new UserSteps(userModel.getUsername(), userModel.getPassword())
                 .getAllAccounts();
 
        assertThat(createdAccounts).hasSize(1);
 
-        new UserDashBoard()
+        new UserDashBoardPage()
                 .checkAlertMessageAndAccept(BankAlert.NEW_ACCOUNT_CREATED.getMessage()
                         + createdAccounts.getFirst().getAccountNumber());
 

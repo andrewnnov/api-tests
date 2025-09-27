@@ -51,6 +51,7 @@ public class MakeDepositTests {
         AdminSteps.createUser(userModel);
 
         //Step 2 Get token
+
         String userAuthHeader = new CrudRequester(RequestSpecs.unauthSpec(),
                 Endpoint.LOGIN,
                 ResponseSpecs.requestReturnsOK())
