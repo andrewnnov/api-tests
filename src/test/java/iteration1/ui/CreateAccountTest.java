@@ -1,96 +1,40 @@
 package iteration1.ui;
 
-import com.codeborne.selenide.Configuration;
-import com.codeborne.selenide.Selectors;
-import com.codeborne.selenide.Selenide;
-import models.CreateAccountResponseModel;
-import models.CreateUserRequestModel;
-import models.CreateUserResponseModel;
-import models.LoginUserRequestModel;
-import org.junit.jupiter.api.BeforeAll;
+import api.models.CreateAccountResponseModel;
+import api.models.CreateUserRequestModel;
+import api.models.CreateUserResponseModel;
+import api.requests.steps.AdminSteps;
+import api.requests.steps.CreateModelSteps;
+import api.requests.steps.UserSteps;
 import org.junit.jupiter.api.Test;
-import org.openqa.selenium.Alert;
-import requests.skelethon.Endpoint;
-import requests.skelethon.requesters.CrudRequester;
-import requests.steps.AdminSteps;
-import requests.steps.CreateModelSteps;
-import specs.RequestSpecs;
-import specs.ResponseSpecs;
+import ui.pages.BankAlert;
+import ui.pages.UserDashBoardPage;
 
-import java.util.Arrays;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.List;
 
-import static com.codeborne.selenide.Selenide.*;
-import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-public class CreateAccountTest {
-    @BeforeAll
-    public static void setupSelenoid() {
-        Configuration.remote = "http://localhost:4444/wd/hub";
-        Configuration.baseUrl = "http://192.168.100.53:3000";
-        Configuration.browserSize = "1920x1080";
-        Configuration.browser="chrome";
-        Configuration.browserVersion = "91.0";
-
-        Configuration.browserCapabilities.setCapability("selenoid:options",
-                Map.of("enableVNC", true,
-                        "enableLog", true));
-    }
+public class CreateAccountTest extends BaseUITest {
 
     @Test
     public void userCanCreateAccountTest() {
-        //Prepare
-        //Step 1 admin login in bank
-        //Step 2 admin create user
-        //Step 3 User login in bank
+
 
         CreateUserRequestModel userModel = CreateModelSteps.createUserModel();
         CreateUserResponseModel user = AdminSteps.createUser(userModel);
 
-        String userAuthHeader = new CrudRequester(RequestSpecs.unauthSpec(),
-                Endpoint.LOGIN,
-                ResponseSpecs.requestReturnsOK())
-                .post(LoginUserRequestModel.builder()
-                        .username(userModel.getUsername())
-                        .password(userModel.getPassword())
-                        .build())
-                .extract().header("Authorization");
+        authAsUser(userModel);
 
-        //need to put this header in local storage
-        Selenide.open("/");
-        executeJavaScript("localStorage.setItem('authToken', arguments[0]);", userAuthHeader);
+        new UserDashBoardPage().open().createNewAccount();
 
-        //Test's step
-        //Step 4 User create account
-        Selenide.open("/dashboard");
-        $(Selectors.byText("➕ Create New Account")).click();
+        List<CreateAccountResponseModel> createdAccounts = UserSteps.getAllAccounts(userModel.getUsername(), userModel.getPassword());
 
-        Alert alert = switchTo().alert();
-        String alertText = alert.getText();
-        assertThat(alertText).contains("✅ New Account Created! Account Number:");
-        alert.accept();
+        assertThat(createdAccounts).hasSize(1);
 
-        Pattern pattern = Pattern.compile("Account Number: (\\w+)");
-        Matcher matcher = pattern.matcher(alertText);
-        matcher.find();
-        String createdAccNumber = matcher.group(1);
+        new UserDashBoardPage().checkAlertMessageAndAccept(BankAlert.NEW_ACCOUNT_CREATED.getMessage() + createdAccounts.getFirst().getAccountNumber());
 
-        //step 5 accont created in API
-        CreateAccountResponseModel[] existingUserAccount = given()
-                .spec(RequestSpecs.authAsUser(userModel.getUsername(), userModel.getPassword()))
-                .get("http://localhost:4111/api/v1/customer/accounts")
-                .then().assertThat().extract().as(CreateAccountResponseModel[].class);
-
-        assertThat(existingUserAccount).hasSize(1);
-
-        CreateAccountResponseModel createdAccount = existingUserAccount[0];
-
-        assertThat(createdAccount).isNotNull();
-        assertThat(createdAccount.getBalance()).isZero();
+        assertThat(createdAccounts.getFirst().getBalance()).isZero();
     }
 
 }

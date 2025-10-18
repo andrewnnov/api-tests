@@ -1,16 +1,16 @@
 package iteration2.api.negative;
 
 import iteration1.api.BaseTest;
-import models.ChangeNameRequestModel;
-import models.ChangeNameResponseModel;
-import models.CreateUserRequestModel;
+import api.models.ChangeNameRequestModel;
+import api.models.ChangeNameResponseModel;
+import api.models.CreateUserRequestModel;
 import org.junit.jupiter.api.Test;
-import requests.skelethon.Endpoint;
-import requests.skelethon.requesters.ValidatedCrudRequester;
-import requests.steps.AdminSteps;
-import requests.steps.CreateModelSteps;
-import specs.RequestSpecs;
-import specs.ResponseSpecs;
+import api.requests.skelethon.Endpoint;
+import api.requests.skelethon.requesters.ValidatedCrudRequester;
+import api.requests.steps.AdminSteps;
+import api.requests.steps.CreateModelSteps;
+import api.specs.RequestSpecs;
+import api.specs.ResponseSpecs;
 
 public class ChangeNameNegativeTest extends BaseTest {
     //bug name can not be a blanc
