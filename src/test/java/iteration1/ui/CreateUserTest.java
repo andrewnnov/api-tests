@@ -6,7 +6,10 @@ import api.models.comparison.ModelAssertions;
 import api.requests.steps.AdminSteps;
 import api.requests.steps.CreateModelSteps;
 import com.codeborne.selenide.Condition;
+import common.annotation.AdminSession;
+import common.extension.AdminSessionExtension;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import ui.pages.AdminPanelPage;
 import ui.pages.BankAlert;
 
@@ -15,11 +18,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class CreateUserTest extends BaseUITest {
 
     @Test
+    @AdminSession
     public void adminCanCreateUserTest() {
-
-        CreateUserRequestModel admin = CreateUserRequestModel.getAdmin();
-
-        authAsUser(admin);
 
         CreateUserRequestModel createUserRequestModel = CreateModelSteps.createUserModel();
 
@@ -35,11 +35,8 @@ public class CreateUserTest extends BaseUITest {
     }
 
     @Test
+    @AdminSession
     public void adminCannotCreateUserWithInvalidDataTest() {
-
-        CreateUserRequestModel admin = CreateUserRequestModel.getAdmin();
-
-        authAsUser(admin);
 
         CreateUserRequestModel createUserRequestModel = CreateModelSteps.createUserModel();
         createUserRequestModel.setUsername("a");

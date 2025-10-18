@@ -24,7 +24,7 @@ public class CreateAccountTest extends BaseUITest {
         CreateUserRequestModel userModel = CreateModelSteps.createUserModel();
         CreateUserResponseModel user = AdminSteps.createUser(userModel);
 
-        authAsUser(userModel);
+//        authAsUser(userModel);
 
         new UserDashBoardPage().open().createNewAccount();
 
