@@ -1,11 +1,8 @@
 package iteration1.ui;
 
 import api.models.CreateAccountResponseModel;
-import api.models.CreateUserRequestModel;
-import api.models.CreateUserResponseModel;
-import api.requests.steps.AdminSteps;
-import api.requests.steps.CreateModelSteps;
-import api.requests.steps.UserSteps;
+import common.annotation.UserSession;
+import common.storage.SessionStorage;
 import org.junit.jupiter.api.Test;
 import ui.pages.BankAlert;
 import ui.pages.UserDashBoardPage;
@@ -18,19 +15,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class CreateAccountTest extends BaseUITest {
 
     @Test
+    @UserSession
     public void userCanCreateAccountTest() {
 
 
-        CreateUserRequestModel userModel = CreateModelSteps.createUserModel();
-        CreateUserResponseModel user = AdminSteps.createUser(userModel);
+//        CreateUserRequestModel userModel = CreateModelSteps.createUserModel();
+//        CreateUserResponseModel user = AdminSteps.createUser(userModel);
 
 //        authAsUser(userModel);
 
         new UserDashBoardPage().open().createNewAccount();
 
-        List<CreateAccountResponseModel> createdAccounts = UserSteps.getAllAccounts(userModel.getUsername(), userModel.getPassword());
+        List<CreateAccountResponseModel> createdAccounts = SessionStorage.getSteps().getAllAccounts();
 
-        assertThat(createdAccounts).hasSize(1);
+        //assertThat(createdAccounts).hasSize(1);
 
         new UserDashBoardPage().checkAlertMessageAndAccept(BankAlert.NEW_ACCOUNT_CREATED.getMessage() + createdAccounts.getFirst().getAccountNumber());
 

@@ -1,5 +1,6 @@
 package api.requests.steps;
 
+import api.generators.RandomModelGenerator;
 import api.requests.skelethon.Endpoint;
 import api.requests.skelethon.requesters.ValidatedCrudRequester;
 import api.models.CreateUserRequestModel;
@@ -17,6 +18,18 @@ public class AdminSteps {
                 Endpoint.ADMIN_USER,
                 ResponseSpecs.entityWasCreated())
                 .post(createUserRequestModel);
+    }
+
+    //TO DO разобрать этот метод
+    public static CreateUserRequestModel createUser() {
+        CreateUserRequestModel userRequestModel = RandomModelGenerator.generate(CreateUserRequestModel.class);
+        new ValidatedCrudRequester<CreateUserResponseModel>(
+                RequestSpecs.adminSpec(),
+                Endpoint.ADMIN_USER,
+                ResponseSpecs.entityWasCreated())
+                .post(userRequestModel);
+
+        return userRequestModel;
     }
 
     public static List<CreateUserResponseModel> getAllUsers() {

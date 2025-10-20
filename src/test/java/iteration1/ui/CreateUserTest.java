@@ -5,15 +5,13 @@ import api.models.CreateUserResponseModel;
 import api.models.comparison.ModelAssertions;
 import api.requests.steps.AdminSteps;
 import api.requests.steps.CreateModelSteps;
-import com.codeborne.selenide.Condition;
 import common.annotation.AdminSession;
-import common.extension.AdminSessionExtension;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import ui.pages.AdminPanelPage;
 import ui.pages.BankAlert;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CreateUserTest extends BaseUITest {
 
@@ -23,10 +21,9 @@ public class CreateUserTest extends BaseUITest {
 
         CreateUserRequestModel createUserRequestModel = CreateModelSteps.createUserModel();
 
-        new AdminPanelPage().open().createUser(createUserRequestModel.getUsername(), createUserRequestModel.getPassword())
+        assertTrue(new AdminPanelPage().open().createUser(createUserRequestModel.getUsername(), createUserRequestModel.getPassword())
                 .checkAlertMessageAndAccept(BankAlert.USER_CREATED_SUCCESSFULLY.getMessage())
-                .getAllUsers().findBy(Condition.exactText(createUserRequestModel.getUsername() + "\nUSER"))
-                .shouldBe(Condition.visible);
+                .getAllUsers().stream().anyMatch(userBage -> userBage.getUsername().equals(createUserRequestModel.getUsername())));
 
         CreateUserResponseModel createUser = AdminSteps.getAllUsers().stream().filter(user -> user.getUsername()
                 .equals(createUserRequestModel.getUsername())).findFirst().get();
@@ -41,10 +38,10 @@ public class CreateUserTest extends BaseUITest {
         CreateUserRequestModel createUserRequestModel = CreateModelSteps.createUserModel();
         createUserRequestModel.setUsername("a");
 
-        new AdminPanelPage().open().createUser(createUserRequestModel.getUsername(), createUserRequestModel.getPassword())
+        assertTrue(new AdminPanelPage().open().createUser(createUserRequestModel.getUsername(), createUserRequestModel.getPassword())
                 .checkAlertMessageAndAccept(BankAlert.USERNAME_MUST_BE_BETWEEN_3_AND_15_CHARACTERS.getMessage())
-                .getAllUsers().findBy(Condition.exactText(createUserRequestModel.getUsername() + "\nUSER"))
-                .shouldNotBe(Condition.exist);
+                .getAllUsers().stream().noneMatch(userBage -> userBage.getUsername().equals(createUserRequestModel.getUsername())));
+
 
         long usersWithSameUsername = AdminSteps.getAllUsers().stream().filter(user -> user.getUsername()
                 .equals(createUserRequestModel.getUsername())).count();
