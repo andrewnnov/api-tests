@@ -1,5 +1,6 @@
 package iteration2.ui;
 
+import api.generators.RandomData;
 import api.helpers.AccountBalanceUtils;
 import api.models.CreateUserRequestModel;
 import api.models.MakeDepositRequestModel;
@@ -16,7 +17,7 @@ import ui.pages.UserDashBoardPage;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class MakeTransferTests extends BaseUITest {
-    public static final double DEPOSIT_AMOUNT = 100.00;
+    public static final double DEPOSIT_AMOUNT = RandomData.getRandomAmount();
     public static final double INVALID_AMOUNT = 0.0;
     public static final double INVALID_NEGATIVE_AMOUNT = 0.0;
 
@@ -24,22 +25,17 @@ public class MakeTransferTests extends BaseUITest {
     @Test
     public void userCanMakeTransferToOtherUserTest() {
 
-        //Step 1 Create user
         CreateUserRequestModel userModel = CreateModelSteps.createUserModel();
         AdminSteps.createUser(userModel);
 
-        //Step 1 Create user 2
         CreateUserRequestModel userModel2 = CreateModelSteps.createUserModel();
         AdminSteps.createUser(userModel2);
 
-        //Step 2 Get token
         authAsUser(userModel);
 
-        //Create account user 1
         ValidatableResponse createAccountResponse = UserSteps.createAccount(userModel);
         long accountId = UserSteps.getAccountID(createAccountResponse);
 
-        //Create account user 2
         ValidatableResponse createAccountResponse2 = UserSteps.createAccount(userModel2);
         long accountIdTwo = UserSteps.getAccountID(createAccountResponse2);
 
@@ -54,8 +50,10 @@ public class MakeTransferTests extends BaseUITest {
 
 
         new UserDashBoardPage().open().makeTransfer().getPage(MakeTransferPage.class).makeTransfer(accountId, accountIdTwo, DEPOSIT_AMOUNT)
-                .checkAlertMessageAndAccept(BankAlert.TRANSFER_SUCCESSFUL.getMessage() + DEPOSIT_AMOUNT + " to account ACC" + accountIdTwo + "!");
-
+                .checkAlertMessageAndAccept(String.format("%s%.1f to account ACC%d!",
+                        BankAlert.TRANSFER_SUCCESSFUL.getMessage(),
+                        DEPOSIT_AMOUNT,
+                        accountIdTwo));
 
         double accountBalanceAfter = AccountBalanceUtils.getBalanceForAccount(userModel.getUsername(),
                 userModel.getPassword(), accountId);
@@ -70,18 +68,14 @@ public class MakeTransferTests extends BaseUITest {
     @Test
     public void userCanMakeTransferToOwnAnotherAccountTest() {
 
-        //Step 1 Create user
         CreateUserRequestModel userModel = CreateModelSteps.createUserModel();
         AdminSteps.createUser(userModel);
 
-        //Step 2 Get token
         authAsUser(userModel);
 
-        //Create account user 1
         ValidatableResponse createAccountResponse = UserSteps.createAccount(userModel);
         long accountId = UserSteps.getAccountID(createAccountResponse);
 
-        //Create account user 2
         ValidatableResponse createAccountResponse2 = UserSteps.createAccount(userModel);
         long accountIdTwo = UserSteps.getAccountID(createAccountResponse2);
 
@@ -95,7 +89,10 @@ public class MakeTransferTests extends BaseUITest {
                 userModel.getPassword(), accountIdTwo);
 
         new UserDashBoardPage().open().makeTransfer().getPage(MakeTransferPage.class).makeTransfer(accountId, accountIdTwo, DEPOSIT_AMOUNT)
-                .checkAlertMessageAndAccept(BankAlert.TRANSFER_SUCCESSFUL.getMessage() + DEPOSIT_AMOUNT + " to account ACC" + accountIdTwo + "!");
+                .checkAlertMessageAndAccept(String.format("%s%.1f to account ACC%d!",
+                        BankAlert.TRANSFER_SUCCESSFUL.getMessage(),
+                        DEPOSIT_AMOUNT,
+                        accountIdTwo));
 
         double accountBalanceAfter = AccountBalanceUtils.getBalanceForAccount(userModel.getUsername(),
                 userModel.getPassword(), accountId);
@@ -109,7 +106,6 @@ public class MakeTransferTests extends BaseUITest {
 
     @Test
     public void userCanNotMakeTransferWithInValidAmount() {
-
 
         CreateUserRequestModel userModel = CreateModelSteps.createUserModel();
         AdminSteps.createUser(userModel);

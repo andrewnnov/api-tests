@@ -1,5 +1,6 @@
 package iteration2.ui;
 
+import api.generators.RandomData;
 import api.helpers.AccountBalanceUtils;
 import api.models.CreateUserRequestModel;
 import api.requests.steps.AdminSteps;
@@ -17,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class MakeDepositTests extends BaseUITest {
 
-    public static final double DEPOSIT_AMOUNT = 100.00;
+    public static final double DEPOSIT_AMOUNT = RandomData.getRandomAmount();
     public static final double INVALID_AMOUNT = 0.0;
 
     @Test
@@ -33,7 +34,10 @@ public class MakeDepositTests extends BaseUITest {
 
         new UserDashBoardPage().open().makeDeposit().getPage(DepositMoneyPage.class)
                 .makeDeposit(accountId, DEPOSIT_AMOUNT)
-                .checkAlertMessageAndAccept(BankAlert.DEPOSIT_SUCCESSFUL.getMessage() + DEPOSIT_AMOUNT + " to account ACC" + accountId + "!");
+                .checkAlertMessageAndAccept(String.format("%s%.1f to account ACC%d!",
+                        BankAlert.DEPOSIT_SUCCESSFUL.getMessage(),
+                        DEPOSIT_AMOUNT,
+                        accountId));
 
         double accountBalanceAfter = AccountBalanceUtils.getBalanceForAccount(userModel.getUsername(),
                 userModel.getPassword(), accountId);
