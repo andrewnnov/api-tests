@@ -34,8 +34,6 @@ public class AdminSteps {
         return createUserRequestModel;
     }
 
-
-
     public static List<CreateUserResponseModel> getAllUsers() {
         return new ValidatedCrudRequester<CreateUserResponseModel>(
                 RequestSpecs.adminSpec(),
@@ -43,6 +41,4 @@ public class AdminSteps {
                 ResponseSpecs.requestReturnsOK())
                 .getAll(CreateUserResponseModel[].class);
     }
-
-
 }

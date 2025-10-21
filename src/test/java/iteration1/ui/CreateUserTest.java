@@ -49,7 +49,6 @@ public class CreateUserTest extends BaseUITest {
                 .equals(createUserRequestModel.getUsername())).count();
 
         assertThat(usersWithSameUsername).isZero();
-
     }
 
 }

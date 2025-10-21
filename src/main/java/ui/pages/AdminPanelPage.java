@@ -10,7 +10,6 @@ import ui.elements.UserBage;
 import java.time.Duration;
 import java.util.List;
 
-import static com.codeborne.selenide.CollectionCondition.sizeGreaterThan;
 import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.$;
 

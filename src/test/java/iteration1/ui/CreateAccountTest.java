@@ -28,5 +28,4 @@ public class CreateAccountTest extends BaseUITest {
 
         assertThat(createdAccounts.getFirst().getBalance()).isZero();
     }
-
 }

@@ -36,8 +36,6 @@ public class UserSteps {
                 .post(null);
     }
 
-
-
     public static MakeDepositResponseModel makeDeposit(CreateUserRequestModel createdUserModel,
                                                        MakeDepositRequestModel makeDepositRequestModel) {
         return new CrudRequester(RequestSpecs
@@ -84,10 +82,6 @@ public class UserSteps {
                 ResponseSpecs.requestReturnsOK()).get();
     }
 
-
-
-
-
     public List<CreateAccountResponseModel> getAllAccounts() {
         return new ValidatedCrudRequester<CreateAccountResponseModel>(
                 RequestSpecs.authAsUser(username, password),
@@ -95,16 +89,4 @@ public class UserSteps {
                 ResponseSpecs.requestReturnsOK())
                 .getAll(CreateAccountResponseModel[].class);
     }
-
-
-
-
-
-
-
-
-
-
-
-
 }
