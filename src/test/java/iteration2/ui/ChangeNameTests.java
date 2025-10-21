@@ -19,7 +19,7 @@ public class ChangeNameTests extends BaseUITest {
     @UserSession()
     public void userCanChangeOwnName() {
         new EditProfilePage().open().editName(NEW_USER_NAME)
-                .checkAlertMessageAndAccept("✅ Name updated successfully!")
+                .checkAlertMessageAndAccept(EditProfilePage.NAME_UPDATE_SUCCESSFULLY)
                 .getPage(UserDashBoardPage.class).open().getWelcomeText().shouldHave(text(NEW_USER_NAME));
 
         GetUserResponseModel responseModelAfter = UserSteps.getUser(SessionStorage.getUser());

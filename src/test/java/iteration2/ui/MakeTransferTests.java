@@ -1,5 +1,6 @@
 package iteration2.ui;
 
+import api.generators.RandomData;
 import api.helpers.AccountBalanceUtils;
 import api.models.MakeDepositRequestModel;
 import api.requests.steps.CreateModelSteps;
@@ -16,7 +17,7 @@ import ui.pages.UserDashBoardPage;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class MakeTransferTests extends BaseUITest {
-    public static final double DEPOSIT_AMOUNT = 100.00;
+    public static final double DEPOSIT_AMOUNT = RandomData.getRandomAmount();
     public static final double INVALID_AMOUNT = 0.0;
     public static final double INVALID_NEGATIVE_AMOUNT = 0.0;
 
@@ -45,8 +46,10 @@ public class MakeTransferTests extends BaseUITest {
        // authAsUser(userModel);
 
         new UserDashBoardPage().open().makeTransfer().getPage(MakeTransferPage.class).makeTransfer(accountId, accountIdTwo, DEPOSIT_AMOUNT)
-                .checkAlertMessageAndAccept(BankAlert.TRANSFER_SUCCESSFUL.getMessage() + DEPOSIT_AMOUNT + " to account ACC" + accountIdTwo + "!");
-
+                .checkAlertMessageAndAccept(String.format("%s%.1f to account ACC%d!",
+                        BankAlert.TRANSFER_SUCCESSFUL.getMessage(),
+                        DEPOSIT_AMOUNT,
+                        accountIdTwo));
 
         double accountBalanceAfter = AccountBalanceUtils.getBalanceForAccount(SessionStorage.getUser(1).getUsername(),
                 SessionStorage.getUser(1).getPassword(), accountId);
@@ -80,7 +83,10 @@ public class MakeTransferTests extends BaseUITest {
                 SessionStorage.getUser(1).getPassword(), accountIdTwo);
 
         new UserDashBoardPage().open().makeTransfer().getPage(MakeTransferPage.class).makeTransfer(accountId, accountIdTwo, DEPOSIT_AMOUNT)
-                .checkAlertMessageAndAccept(BankAlert.TRANSFER_SUCCESSFUL.getMessage() + DEPOSIT_AMOUNT + " to account ACC" + accountIdTwo + "!");
+                .checkAlertMessageAndAccept(String.format("%s%.1f to account ACC%d!",
+                        BankAlert.TRANSFER_SUCCESSFUL.getMessage(),
+                        DEPOSIT_AMOUNT,
+                        accountIdTwo));
 
         double accountBalanceAfter = AccountBalanceUtils.getBalanceForAccount(SessionStorage.getUser(1).getUsername(),
                 SessionStorage.getUser(1).getPassword(), accountId);
