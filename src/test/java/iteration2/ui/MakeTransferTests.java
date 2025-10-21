@@ -1,11 +1,11 @@
 package iteration2.ui;
 
 import api.helpers.AccountBalanceUtils;
-import api.models.CreateUserRequestModel;
 import api.models.MakeDepositRequestModel;
-import api.requests.steps.AdminSteps;
 import api.requests.steps.CreateModelSteps;
 import api.requests.steps.UserSteps;
+import common.annotations.UserSession;
+import common.storage.SessionStorage;
 import io.restassured.response.ValidatableResponse;
 import iteration1.ui.BaseUITest;
 import org.junit.jupiter.api.Test;
@@ -22,124 +22,105 @@ public class MakeTransferTests extends BaseUITest {
 
 
     @Test
+    @UserSession(value = 2, auth = 1)
     public void userCanMakeTransferToOtherUserTest() {
 
-        //Step 1 Create user
-        CreateUserRequestModel userModel = CreateModelSteps.createUserModel();
-        AdminSteps.createUser(userModel);
-
-        //Step 1 Create user 2
-        CreateUserRequestModel userModel2 = CreateModelSteps.createUserModel();
-        AdminSteps.createUser(userModel2);
-
-        //Step 2 Get token
-        authAsUser(userModel);
-
-        //Create account user 1
-        ValidatableResponse createAccountResponse = UserSteps.createAccount(userModel);
+        ValidatableResponse createAccountResponse = SessionStorage.getSteps().createAccount();
         long accountId = UserSteps.getAccountID(createAccountResponse);
 
         //Create account user 2
-        ValidatableResponse createAccountResponse2 = UserSteps.createAccount(userModel2);
+        SessionStorage.getSteps();
+        ValidatableResponse createAccountResponse2 = UserSteps.createAccount(SessionStorage.getUser(2));
         long accountIdTwo = UserSteps.getAccountID(createAccountResponse2);
 
         MakeDepositRequestModel makeDeposit = CreateModelSteps.createDepositModel(accountId, DEPOSIT_AMOUNT);
-        UserSteps.makeDeposit(userModel, makeDeposit);
+        UserSteps.makeDeposit(SessionStorage.getUser(1), makeDeposit);
 
-        double accountBalanceBefore = AccountBalanceUtils.getBalanceForAccount(userModel.getUsername(),
-                userModel.getPassword(), accountId);
+        double accountBalanceBefore = AccountBalanceUtils.getBalanceForAccount(SessionStorage.getUser(1).getUsername(),
+                SessionStorage.getUser(1).getPassword(), accountId);
 
-        double accountTwoBalanceBefore = AccountBalanceUtils.getBalanceForAccount(userModel2.getUsername(),
-                userModel2.getPassword(), accountIdTwo);
+        double accountTwoBalanceBefore = AccountBalanceUtils.getBalanceForAccount(SessionStorage.getUser(2).getUsername(),
+                SessionStorage.getUser(2).getPassword(), accountIdTwo);
 
+       // authAsUser(userModel);
 
         new UserDashBoardPage().open().makeTransfer().getPage(MakeTransferPage.class).makeTransfer(accountId, accountIdTwo, DEPOSIT_AMOUNT)
                 .checkAlertMessageAndAccept(BankAlert.TRANSFER_SUCCESSFUL.getMessage() + DEPOSIT_AMOUNT + " to account ACC" + accountIdTwo + "!");
 
 
-        double accountBalanceAfter = AccountBalanceUtils.getBalanceForAccount(userModel.getUsername(),
-                userModel.getPassword(), accountId);
+        double accountBalanceAfter = AccountBalanceUtils.getBalanceForAccount(SessionStorage.getUser(1).getUsername(),
+                SessionStorage.getUser(1).getPassword(), accountId);
 
-        double accountTwoBalanceAfter = AccountBalanceUtils.getBalanceForAccount(userModel2.getUsername(),
-                userModel2.getPassword(), accountIdTwo);
+        double accountTwoBalanceAfter = AccountBalanceUtils.getBalanceForAccount(SessionStorage.getUser(2).getUsername(),
+                SessionStorage.getUser(2).getPassword(), accountIdTwo);
 
         assertThat(accountBalanceBefore).isEqualTo(accountBalanceAfter + DEPOSIT_AMOUNT);
         assertThat(accountTwoBalanceBefore).isEqualTo(accountTwoBalanceAfter - DEPOSIT_AMOUNT);
     }
 
     @Test
+    @UserSession(value = 2, auth = 1)
     public void userCanMakeTransferToOwnAnotherAccountTest() {
 
-        //Step 1 Create user
-        CreateUserRequestModel userModel = CreateModelSteps.createUserModel();
-        AdminSteps.createUser(userModel);
-
-        //Step 2 Get token
-        authAsUser(userModel);
-
         //Create account user 1
-        ValidatableResponse createAccountResponse = UserSteps.createAccount(userModel);
+        ValidatableResponse createAccountResponse = SessionStorage.getSteps().createAccount();
         long accountId = UserSteps.getAccountID(createAccountResponse);
 
         //Create account user 2
-        ValidatableResponse createAccountResponse2 = UserSteps.createAccount(userModel);
+        ValidatableResponse createAccountResponse2 = SessionStorage.getSteps().createAccount();
         long accountIdTwo = UserSteps.getAccountID(createAccountResponse2);
 
         MakeDepositRequestModel makeDeposit = CreateModelSteps.createDepositModel(accountId, DEPOSIT_AMOUNT);
-        UserSteps.makeDeposit(userModel, makeDeposit);
+        UserSteps.makeDeposit(SessionStorage.getUser(1), makeDeposit);
 
-        double accountBalanceBefore = AccountBalanceUtils.getBalanceForAccount(userModel.getUsername(),
-                userModel.getPassword(), accountId);
+        double accountBalanceBefore = AccountBalanceUtils.getBalanceForAccount(SessionStorage.getUser(1).getUsername(),
+                SessionStorage.getUser(1).getPassword(), accountId);
 
-        double accountTwoBalanceBefore = AccountBalanceUtils.getBalanceForAccount(userModel.getUsername(),
-                userModel.getPassword(), accountIdTwo);
+        double accountTwoBalanceBefore = AccountBalanceUtils.getBalanceForAccount(SessionStorage.getUser(1).getUsername(),
+                SessionStorage.getUser(1).getPassword(), accountIdTwo);
 
         new UserDashBoardPage().open().makeTransfer().getPage(MakeTransferPage.class).makeTransfer(accountId, accountIdTwo, DEPOSIT_AMOUNT)
                 .checkAlertMessageAndAccept(BankAlert.TRANSFER_SUCCESSFUL.getMessage() + DEPOSIT_AMOUNT + " to account ACC" + accountIdTwo + "!");
 
-        double accountBalanceAfter = AccountBalanceUtils.getBalanceForAccount(userModel.getUsername(),
-                userModel.getPassword(), accountId);
+        double accountBalanceAfter = AccountBalanceUtils.getBalanceForAccount(SessionStorage.getUser(1).getUsername(),
+                SessionStorage.getUser(1).getPassword(), accountId);
 
-        double accountTwoBalanceAfter = AccountBalanceUtils.getBalanceForAccount(userModel.getUsername(),
-                userModel.getPassword(), accountIdTwo);
+        double accountTwoBalanceAfter = AccountBalanceUtils.getBalanceForAccount(SessionStorage.getUser(1).getUsername(),
+                SessionStorage.getUser(1).getPassword(), accountIdTwo);
 
         assertThat(accountBalanceBefore).isEqualTo(accountBalanceAfter + DEPOSIT_AMOUNT);
         assertThat(accountTwoBalanceBefore).isEqualTo(accountTwoBalanceAfter - DEPOSIT_AMOUNT);
     }
 
     @Test
+    @UserSession(value = 2, auth = 1)
     public void userCanNotMakeTransferWithInValidAmount() {
 
 
-        CreateUserRequestModel userModel = CreateModelSteps.createUserModel();
-        AdminSteps.createUser(userModel);
-
-        authAsUser(userModel);
-
-        ValidatableResponse createAccountResponse = UserSteps.createAccount(userModel);
+        ValidatableResponse createAccountResponse = SessionStorage.getSteps().createAccount();
         long accountId = UserSteps.getAccountID(createAccountResponse);
 
 
-        ValidatableResponse createAccountResponse2 = UserSteps.createAccount(userModel);
+        ValidatableResponse createAccountResponse2 = SessionStorage.getSteps().createAccount();
         long accountIdTwo = UserSteps.getAccountID(createAccountResponse2);
 
         MakeDepositRequestModel makeDeposit = CreateModelSteps.createDepositModel(accountId, DEPOSIT_AMOUNT);
-        UserSteps.makeDeposit(userModel, makeDeposit);
+        UserSteps.makeDeposit(SessionStorage.getUser(1), makeDeposit);
 
-        double accountBalanceBefore = AccountBalanceUtils.getBalanceForAccount(userModel.getUsername(),
-                userModel.getPassword(), accountId);
+        double accountBalanceBefore = AccountBalanceUtils.getBalanceForAccount(SessionStorage.getUser(1).getUsername(),
+                SessionStorage.getUser(1).getPassword(), accountId);
 
-        double accountTwoBalanceBefore = AccountBalanceUtils.getBalanceForAccount(userModel.getUsername(),
-                userModel.getPassword(), accountIdTwo);
+        double accountTwoBalanceBefore = AccountBalanceUtils.getBalanceForAccount(SessionStorage.getUser(1).getUsername(),
+                SessionStorage.getUser(1).getPassword(), accountIdTwo);
 
         new UserDashBoardPage().open().makeTransfer().getPage(MakeTransferPage.class).makeTransfer(accountId, accountIdTwo, INVALID_AMOUNT)
                 .checkAlertMessageAndAccept(BankAlert.TRANSFER_UNSUCCESSFUL.getMessage());
 
-        double accountBalanceAfter = AccountBalanceUtils.getBalanceForAccount(userModel.getUsername(),
-                userModel.getPassword(), accountId);
+        double accountBalanceAfter = AccountBalanceUtils.getBalanceForAccount(SessionStorage.getUser(1).getUsername(),
+                SessionStorage.getUser(1).getPassword(), accountId);
 
-        double accountTwoBalanceAfter = AccountBalanceUtils.getBalanceForAccount(userModel.getUsername(),
-                userModel.getPassword(), accountIdTwo);
+        double accountTwoBalanceAfter = AccountBalanceUtils.getBalanceForAccount(SessionStorage.getUser(1).getUsername(),
+                SessionStorage.getUser(1).getPassword(), accountIdTwo);
 
         assertThat(accountBalanceBefore).isEqualTo(accountBalanceAfter);
         assertThat(accountTwoBalanceBefore).isEqualTo(accountTwoBalanceAfter);
