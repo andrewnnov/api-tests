@@ -1,0 +1,27 @@
+package ui.pages;
+
+import com.codeborne.selenide.Selectors;
+import com.codeborne.selenide.SelenideElement;
+
+import static com.codeborne.selenide.Condition.visible;
+import static com.codeborne.selenide.Selenide.$;
+
+public class EditProfilePage extends BasePage<EditProfilePage> {
+    public static final String NAME_UPDATE_SUCCESSFULLY = "✅ Name updated successfully!";
+
+    private SelenideElement newNameInput = $(Selectors.byAttribute("placeholder", "Enter new name"));
+    private SelenideElement saveChangesButton = $(Selectors.byText("\uD83D\uDCBE Save Changes"));
+
+    @Override
+    public String url() {
+        return "/edit-profile";
+    }
+
+    public EditProfilePage editName(String newName) {
+        newNameInput.shouldBe(visible);
+        newNameInput.clear();
+        newNameInput.sendKeys(newName);
+        saveChangesButton.click();
+        return this;
+    }
+}
