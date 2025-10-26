@@ -2,10 +2,9 @@ package iteration2.ui;
 
 import api.generators.RandomData;
 import api.helpers.AccountBalanceUtils;
-import api.models.CreateUserRequestModel;
-import api.requests.steps.AdminSteps;
-import api.requests.steps.CreateModelSteps;
 import api.requests.steps.UserSteps;
+import common.annotations.UserSession;
+import common.storage.SessionStorage;
 import io.restassured.response.ValidatableResponse;
 import iteration1.ui.BaseUITest;
 import org.junit.jupiter.api.Test;
@@ -22,15 +21,14 @@ public class MakeDepositTests extends BaseUITest {
     public static final double INVALID_AMOUNT = 0.0;
 
     @Test
+    @UserSession()
     public void userCanMakeDepositTest() {
-        CreateUserRequestModel userModel = CreateModelSteps.createUserModel();
-        AdminSteps.createUser(userModel);
-        authAsUser(userModel);
-        ValidatableResponse createAccountResponse = UserSteps.createAccount(userModel);
+
+        ValidatableResponse createAccountResponse = SessionStorage.getSteps().createAccount();
         long accountId = UserSteps.getAccountID(createAccountResponse);
 
-        double accountBalanceBefore = AccountBalanceUtils.getBalanceForAccount(userModel.getUsername(),
-                userModel.getPassword(), accountId);
+        double accountBalanceBefore = AccountBalanceUtils.getBalanceForAccount(SessionStorage.getUser().getUsername(),
+                SessionStorage.getUser().getPassword(), accountId);
 
         new UserDashBoardPage().open().makeDeposit().getPage(DepositMoneyPage.class)
                 .makeDeposit(accountId, DEPOSIT_AMOUNT)
@@ -39,31 +37,27 @@ public class MakeDepositTests extends BaseUITest {
                         DEPOSIT_AMOUNT,
                         accountId));
 
-        double accountBalanceAfter = AccountBalanceUtils.getBalanceForAccount(userModel.getUsername(),
-                userModel.getPassword(), accountId);
+        double accountBalanceAfter = AccountBalanceUtils.getBalanceForAccount(SessionStorage.getUser().getUsername(),
+                SessionStorage.getUser().getPassword(), accountId);
 
         assertThat(accountBalanceBefore).isEqualTo(accountBalanceAfter - DEPOSIT_AMOUNT);
     }
 
     @Test
+    @UserSession()
     public void userCanNotMakeDepositWithInvalidAmountTest() {
 
-        CreateUserRequestModel userModel = CreateModelSteps.createUserModel();
-        AdminSteps.createUser(userModel);
-
-        authAsUser(userModel);
-
-        ValidatableResponse createAccountResponse = UserSteps.createAccount(userModel);
+        ValidatableResponse createAccountResponse = SessionStorage.getSteps().createAccount();
         long accountId = UserSteps.getAccountID(createAccountResponse);
 
-        double accountBalanceBefore = AccountBalanceUtils.getBalanceForAccount(userModel.getUsername(),
-                userModel.getPassword(), accountId);
+        double accountBalanceBefore = AccountBalanceUtils.getBalanceForAccount(SessionStorage.getUser().getUsername(),
+                SessionStorage.getUser().getPassword(), accountId);
 
         new UserDashBoardPage().open().makeDeposit().getPage(DepositMoneyPage.class)
                 .makeDeposit(accountId, INVALID_AMOUNT).checkAlertMessageAndAccept(BankAlert.DEPOSIT_UNSUCCESSFUL.getMessage());
 
-        double accountBalanceAfter = AccountBalanceUtils.getBalanceForAccount(userModel.getUsername(),
-                userModel.getPassword(), accountId);
+        double accountBalanceAfter = AccountBalanceUtils.getBalanceForAccount(SessionStorage.getUser().getUsername(),
+                SessionStorage.getUser().getPassword(), accountId);
 
         assertThat(accountBalanceBefore).isEqualTo(accountBalanceAfter);
     }

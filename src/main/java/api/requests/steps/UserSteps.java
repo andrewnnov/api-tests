@@ -14,16 +14,23 @@ public class UserSteps {
     private String username;
     private String password;
 
-
-
     public UserSteps(String username, String password) {
         this.username = username;
         this.password = password;
     }
 
+    //TODO: Убрать
     public static ValidatableResponse createAccount(CreateUserRequestModel createUserRequestModel) {
         return new CrudRequester(
                 RequestSpecs.authAsUser(createUserRequestModel.getUsername(), createUserRequestModel.getPassword()),
+                Endpoint.ACCOUNTS,
+                ResponseSpecs.entityWasCreated())
+                .post(null);
+    }
+
+    public ValidatableResponse createAccount() {
+        return new CrudRequester(
+                RequestSpecs.authAsUser(username, password),
                 Endpoint.ACCOUNTS,
                 ResponseSpecs.entityWasCreated())
                 .post(null);
@@ -60,6 +67,7 @@ public class UserSteps {
                 .update(newUserName);
     }
 
+    //TODO: Убрать
     public static GetUserResponseModel getUser(CreateUserRequestModel createdUser) {
         return (GetUserResponseModel) new ValidatedCrudRequester<GetUserResponseModel>(
                 RequestSpecs.authAsUser(createdUser.getUsername(), createdUser.getPassword()),
@@ -67,23 +75,18 @@ public class UserSteps {
                 ResponseSpecs.requestReturnsOK()).get();
     }
 
-    public static List<CreateAccountResponseModel> getAllAccounts(String username, String password) {
+    public GetUserResponseModel getUser() {
+        return (GetUserResponseModel) new ValidatedCrudRequester<GetUserResponseModel>(
+                RequestSpecs.authAsUser(username, password),
+                Endpoint.GET_USER,
+                ResponseSpecs.requestReturnsOK()).get();
+    }
+
+    public List<CreateAccountResponseModel> getAllAccounts() {
         return new ValidatedCrudRequester<CreateAccountResponseModel>(
                 RequestSpecs.authAsUser(username, password),
                 Endpoint.CUSTOMER_ACCOUNTS,
                 ResponseSpecs.requestReturnsOK())
                 .getAll(CreateAccountResponseModel[].class);
     }
-
-
-
-
-
-
-
-
-
-
-
-
 }
