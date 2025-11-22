@@ -8,7 +8,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 public class SessionStorage {
-    private static final SessionStorage INSTANCE = new SessionStorage();
+    /*
+    Thread local  - способ сделать Session storage изолированным для каждого потока.
+    каждый поток будет иметь свою собственную копию SessionStorage, что полезно в многопоточных тестах,
+    чтобы избежать конфликтов между параллельными тестами.
+    Map<Thread, SessionStorage>
+     */
+    private static final ThreadLocal<SessionStorage> INSTANCE = ThreadLocal.withInitial(SessionStorage::new);
 
     private final LinkedHashMap<CreateUserRequestModel, UserSteps> userStepsMap =
             new LinkedHashMap<>();
@@ -17,12 +23,12 @@ public class SessionStorage {
 
     public static void addUsers(List<CreateUserRequestModel> users) {
         for (CreateUserRequestModel user: users) {
-            INSTANCE.userStepsMap.put(user, new UserSteps(user.getUsername(), user.getPassword()));
+            INSTANCE.get().userStepsMap.put(user, new UserSteps(user.getUsername(), user.getPassword()));
         }
     }
 
     public static CreateUserRequestModel getUser(int number) {
-        return new ArrayList<>(INSTANCE.userStepsMap.keySet()).get(number - 1);
+        return new ArrayList<>(INSTANCE.get().userStepsMap.keySet()).get(number - 1);
     }
 
     public static CreateUserRequestModel getUser() {
@@ -30,7 +36,7 @@ public class SessionStorage {
     }
 
     public static UserSteps getSteps(int number) {
-        return new ArrayList<>(INSTANCE.userStepsMap.values()).get(number - 1);
+        return new ArrayList<>(INSTANCE.get().userStepsMap.values()).get(number - 1);
     }
 
     public static UserSteps getSteps() {
@@ -38,6 +44,6 @@ public class SessionStorage {
     }
 
     public static void clear() {
-        INSTANCE.userStepsMap.clear();
+        INSTANCE.get().userStepsMap.clear();
     }
 }
