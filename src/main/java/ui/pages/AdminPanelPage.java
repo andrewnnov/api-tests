@@ -4,6 +4,7 @@ import com.codeborne.selenide.CollectionCondition;
 import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.Selectors;
 import com.codeborne.selenide.SelenideElement;
+import common.utils.RetryUtils;
 import lombok.Getter;
 import ui.elements.UserBage;
 
@@ -41,4 +42,10 @@ public class AdminPanelPage extends BasePage<AdminPanelPage> {
     }
 
 
+    public UserBage findUserByUsername(String username) {
+        return RetryUtils.retry(() -> getAllUsers().stream().filter(it -> it.getUsername().equals(username)).findAny().orElse(null),
+                (result) -> result != null,
+                3,
+                500);
+    }
 }

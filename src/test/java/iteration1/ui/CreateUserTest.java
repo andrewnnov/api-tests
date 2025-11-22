@@ -7,6 +7,7 @@ import api.requests.steps.AdminSteps;
 import api.requests.steps.CreateModelSteps;
 import common.annotations.AdminSession;
 import org.junit.jupiter.api.Test;
+import ui.elements.UserBage;
 import ui.pages.AdminPanelPage;
 import ui.pages.BankAlert;
 
@@ -22,9 +23,11 @@ public class CreateUserTest extends BaseUITest {
 
         CreateUserRequestModel createUserRequestModel = CreateModelSteps.createUserModel();
 
-        assertTrue(new AdminPanelPage().open().createUser(createUserRequestModel.getUsername(), createUserRequestModel.getPassword())
+        UserBage newUserBage =  new AdminPanelPage().open().createUser(createUserRequestModel.getUsername(), createUserRequestModel.getPassword())
                 .checkAlertMessageAndAccept(BankAlert.USER_CREATED_SUCCESSFULLY.getMessage())
-                .getAllUsers().stream().anyMatch(userBage -> userBage.getUsername().equals(createUserRequestModel.getUsername())));
+                .findUserByUsername(createUserRequestModel.getUsername());
+
+        assertThat(newUserBage).as("UserBage should exist on Dashboard after user creation").isNotNull();
 
 
         CreateUserResponseModel createUser = AdminSteps.getAllUsers().stream().filter(user -> user.getUsername()
